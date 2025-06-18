@@ -3,7 +3,7 @@ import React, {useEffect} from 'react';
 const BootstrapTestPage = () => {
     useEffect(() => {
         const api = process.env.REACT_APP_API_ADDRESS;
-        fetch(api)
+        fetch(`${api}/templates`)
             .then(response => response.json())
             .then(json => console.log(json));
     });
