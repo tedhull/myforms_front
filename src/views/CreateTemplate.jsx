@@ -24,7 +24,7 @@ export default function CreateTemplatePage() {
     };
 
     return (
-        <div className="p-6 max-w-xl mx-auto">
+            <div className="p-6 max-w-xl mx-auto">
             <h1 className="text-2xl mb-4">Create Template</h1>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input
