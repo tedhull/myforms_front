@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import axios from 'axios';
-
 export default function CreateTemplatePage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -16,7 +15,7 @@ export default function CreateTemplatePage() {
                 fields: JSON.parse(fields), // expecting fields as JSON
             });
             console.log(response.data);
-            alert('Template created: ' + response.data.id);
+            alert('Template created: ' + response.data.index);
         } catch (error) {
             console.error(error);
             alert('Failed to create template');

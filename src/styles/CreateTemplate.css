@@ -1,0 +1,55 @@
+.card-with-top-left-border {
+    position: relative;
+    border: none;
+    border-top-left-radius:12px;
+    border-top-right-radius: 12px;
+    overflow: hidden;
+}
+
+.toolbar {
+    position: fixed;
+    top: 50%;
+    right: 20px; /* distance from right edge */
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.card-with-top-left-border::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background-color: #9000c5; /* Customize */
+    z-index: 2;
+}
+
+
+.header-block:before {
+    border-top: 15px #0075dc;
+    z-index: 1;
+}
+
+.border-bottom-only {
+    border: none;
+    width: 100%;
+    box-shadow: none;
+    border-bottom: 1px solid #282c34;
+    border-radius: 0;
+
+
+}
+
+.border-bottom-only:focus {
+    outline: none;
+    border-bottom: 3px solid #0075dc;
+    box-shadow: none;
+}
