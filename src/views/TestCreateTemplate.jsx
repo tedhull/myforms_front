@@ -1,36 +1,38 @@
-import {useEffect, useState, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import '../styles/CreateTemplate.css';
 import '../App.css';
-import {DragDropContext, Droppable, Draggable} from 'react-beautiful-dnd';
+import HeaderBlock from '../components/HeaderBlock';
+import Toolbar from "../components/Toolbar";
+import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
+import {AppHeader} from "../components/AppHeader";
+import axios from "axios";
 
-export function TestCreateTemplate() {
+export function TestCreateTemplate({toggleTheme}) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [tags, setTags] = useState("");
     const textareaRef = useRef(null);
-    const [questions, setQuestions] = useState([]);
-    const [selectedType, setSelectedType] = useState('');
-    const [inputValue, setInputValue] = useState('');
-    const [options, setOptions] = useState([{index: 1, label: ''}]);
+    const [blocks, setBlocks] = useState([]);
+    const [topic, setTopic] = useState("");
 
 
     const handleDragEnd = (result) => {
         if (!result.destination) return;
 
-        const reordered = Array.from(questions);
+        const reordered = Array.from(blocks);
         const [removed] = reordered.splice(result.source.index, 1);
         reordered.splice(result.destination.index, 0, removed);
 
-        setQuestions(reordered);
+        setBlocks(reordered);
     };
     const deleteBlock = (indexToDelete) => {
-        setQuestions(prev => prev.filter((_, index) => index !== indexToDelete));
+        setBlocks(prev => prev.filter((_, index) => index !== indexToDelete));
     };
+
     const addImage = () => {
-        const arrayLength = questions.length;
-        setQuestions([
-            ...questions,
+        setBlocks([
+            ...blocks,
             {
-                index: questions.length - 1,
                 type: 'image',
                 preview: '',
                 file: null,
@@ -38,23 +40,57 @@ export function TestCreateTemplate() {
             }
         ]);
     }
-    const addQuestion = () => {
-        const cardsCount = questions.length;
 
-        setQuestions([
-            ...questions,
+    const addQuestion = () => {
+        setBlocks([
+            ...blocks,
             {
-                index: cardsCount - 1,
-                title: `Question ${cardsCount + 1}`,
+                title: `Question ${blocks.length + 1}`,
                 type: 'question',
                 description: '',
-                selectedType: '',
+                selectedType: 'single-line',
                 inputValue: '',
                 options: [{index: 1, label: ''}],
+                required: false,
             },
         ]);
     };
 
+    const submit = async (e) => {
+        e.preventDefault();
+        try {
+            const api = process.env.REACT_APP_API;
+            const response = await axios.post(`${api}/template/new`, {
+                title: title,
+                description: description,
+                tags: createTags(),
+                topic: topic,
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const createTags = () => {
+        return tags
+            .split(' ')
+            .filter(Boolean)
+            .map(tag => `#${tag.replace(/^#/, '')}`);
+    }
+    const log = () => {
+        console.log(formJson);
+    }
+    const formJson = JSON.stringify(
+        blocks.map((block) => ({
+            type: block.type,
+            title: block.title,
+            selectedType: block.selectedType,
+            description: block.description,
+            inputValue: block.inputValue,
+            options: block.options,
+            required: block.required,
+        }))
+    );
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -63,136 +99,22 @@ export function TestCreateTemplate() {
         }
     }, [description]);
 
-    const empty = () => {
-
-    }
-
-    const renderField = () => {
-        switch (selectedType) {
-            case 'single-line':
-                return (
-                    <input
-                        type="text"
-                        className="form-control mt-3"
-                        placeholder="Your answer"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                );
-            case 'paragraph':
-                return (
-                    <textarea
-                        className="form-control mt-3"
-                        rows="3"
-                        placeholder="Your detailed answer"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                );
-            case 'number':
-                return (
-                    <input
-                        type="number"
-                        className="form-control mt-3"
-                        placeholder="Enter a number"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                );
-            case 'one-from-list':
-                return (
-                    <div className="form-check mt-3">
-                        {options.map((option, index) => (
-                            <div key={option.index} className="form-check">
-                                <input
-                                    type="radio"
-                                    className="form-check-input"
-                                    name="oneFromList"
-                                    id={`radio-${option.index}`}
-                                    value={option.label}
-                                    checked={inputValue === option.label}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                />
-                                <label className="form-check-label" htmlFor={`radio-${option.index}`}>
-                                    {option.label}
-                                </label>
-                            </div>
-                        ))}
-                    </div>
-                );
-
-            case 'few-from-list':
-                return (
-                    <div className="form-check mt-3">
-                        {options.map((option, index) => (
-                            <div key={option.index} className="form-check">
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    id={`checkbox-${option.index}`}
-                                    value={option.label}
-                                    checked={Array.isArray(inputValue) && inputValue.includes(option.label)}
-                                    onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setInputValue((prev) => {
-                                            const prevArr = Array.isArray(prev) ? prev : [];
-                                            if (checked) return [...prevArr, option.label];
-                                            return prevArr.filter((v) => v !== option.label);
-                                        });
-                                    }}
-                                />
-                                <label className="form-check-label" htmlFor={`checkbox-${option.index}`}>
-                                    {option.label}
-                                </label>
-                            </div>
-                        ))}
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
     return (
 
         <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="App-header">
-                <div className="toolbar">
-                    <button className="btn btn-primary mb-1" onClick={addQuestion}>➕</button>
-                    <button className="btn btn-secondary mt-1" onClick={addImage}>🖼️</button>
-                </div>
-
-                <div className="container mt-5 d-flex justify-content-center">
-                    <div className="card shadow card-with-top-left-border" style={{width: "100%", maxWidth: "800px"}}>
-                        <div className="card-body">
-                            <div className="mb-3 mt-3" style={{height: "40px"}}>
-                                <input
-                                    type="text"
-                                    className="border-bottom-only"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Enter template title"
-                                />
-                            </div>
-                            <div className="mb-3">
-            <textarea
-                ref={textareaRef}
-                className="border-bottom-only"
-                rows="1"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter template description"
-                style={{overflow: 'hidden', resize: 'none'}}
-            />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <AppHeader className="App-header">
+                <HeaderBlock title={title} description={description} textareaRef={textareaRef} tags={tags}
+                             setTags={setTags} setDescription={setDescription}
+                             setTitle={setTitle}
+                             topic={topic}
+                             setTopic={setTopic}
+                />
+                <button onClick={log}>LOG BLOCKS</button>
+                <Toolbar toggleTheme={toggleTheme} addImage={addImage} addQuestion={addQuestion}/>
                 <Droppable droppableId="questions" direction="vertical">
                     {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
-                            {questions.map((question, index) => (
+                            {blocks.map((block, index) => (
                                 <Draggable key={index} draggableId={`q-${index}`} index={index}>
                                     {(provided) => (
                                         <div
@@ -211,7 +133,7 @@ export function TestCreateTemplate() {
                                                     >
                                                         ❌
                                                     </button>
-                                                    {question.type === 'question' && (
+                                                    {block.type === 'question' && (
                                                         <div>
                                                             <div className="row mt-5">
                                                                 <div className="col-md-8">
@@ -219,23 +141,23 @@ export function TestCreateTemplate() {
                                                                         type="text"
                                                                         className="form-control"
                                                                         placeholder="Question"
-                                                                        value={question.title}
+                                                                        value={block.title}
                                                                         onChange={(e) => {
-                                                                            const updated = [...questions];
+                                                                            const updated = [...blocks];
                                                                             updated[index].title = e.target.value;
-                                                                            setQuestions(updated);
+                                                                            setBlocks(updated);
                                                                         }}
                                                                     />
                                                                 </div>
                                                                 <div className="col-md-4">
                                                                     <select
                                                                         className="form-control"
-                                                                        value={question.selectedType}
+                                                                        value={block.selectedType}
                                                                         onChange={(e) => {
-                                                                            const updated = [...questions];
+                                                                            const updated = [...blocks];
                                                                             updated[index].selectedType = e.target.value;
                                                                             updated[index].inputValue = e.target.value === "few-from-list" ? [] : "";
-                                                                            setQuestions(updated);
+                                                                            setBlocks(updated);
                                                                         }}
                                                                     >
                                                                         <option value="single-line">Single-line text
@@ -244,7 +166,8 @@ export function TestCreateTemplate() {
                                                                         <option value="number">Number</option>
                                                                         <option value="one-from-list">One from list
                                                                         </option>
-                                                                        <option value="few-from-list">A few from list
+                                                                        <option value="few-from-list">A few from
+                                                                            list
                                                                         </option>
                                                                     </select>
                                                                 </div>
@@ -255,21 +178,20 @@ export function TestCreateTemplate() {
                                                                     type="text"
                                                                     className="form-control"
                                                                     placeholder="Description"
-                                                                    value={question.description}
+                                                                    value={block.description}
                                                                     onChange={(e) => {
-                                                                        const updated = [...questions];
+                                                                        const updated = [...blocks];
                                                                         updated[index].description = e.target.value;
-                                                                        setQuestions(updated);
+                                                                        setBlocks(updated);
                                                                     }}
                                                                 />
                                                             </div>
 
-                                                            {/* Options Customizer */}
-                                                            {["one-from-list", "few-from-list"].includes(question.selectedType) && (
+                                                            {["one-from-list", "few-from-list"].includes(block.selectedType) && (
                                                                 <div className="mb-3">
                                                                     <label className="form-label mt-1">Customize
                                                                         Options</label>
-                                                                    {question.options.map((option, optIndex) => (
+                                                                    {block.options.map((option, optIndex) => (
                                                                         <div className="input-group mb-2"
                                                                              key={option.index}>
                                                                             <input
@@ -277,9 +199,9 @@ export function TestCreateTemplate() {
                                                                                 className="form-control"
                                                                                 value={option.label}
                                                                                 onChange={(e) => {
-                                                                                    const updated = [...questions];
+                                                                                    const updated = [...blocks];
                                                                                     updated[index].options[optIndex].label = e.target.value;
-                                                                                    setQuestions(updated);
+                                                                                    setBlocks(updated);
                                                                                 }}
                                                                                 placeholder={`Option ${optIndex + 1}`}
                                                                             />
@@ -287,9 +209,9 @@ export function TestCreateTemplate() {
                                                                                 className="btn btn-danger"
                                                                                 type="button"
                                                                                 onClick={() => {
-                                                                                    const updated = [...questions];
+                                                                                    const updated = [...blocks];
                                                                                     updated[index].options = updated[index].options.filter((_, i) => i !== optIndex);
-                                                                                    setQuestions(updated);
+                                                                                    setBlocks(updated);
                                                                                 }}
                                                                             >
                                                                                 ❌
@@ -300,12 +222,12 @@ export function TestCreateTemplate() {
                                                                         className="btn btn-outline-primary mt-1 m-lg-1"
                                                                         type="button"
                                                                         onClick={() => {
-                                                                            const updated = [...questions];
+                                                                            const updated = [...blocks];
                                                                             updated[index].options.push({
                                                                                 index: Date.now(),
                                                                                 label: "",
                                                                             });
-                                                                            setQuestions(updated);
+                                                                            setBlocks(updated);
                                                                         }}
                                                                     >
                                                                         ➕ Add Option
@@ -315,18 +237,18 @@ export function TestCreateTemplate() {
 
                                                             {/* Answer Input Renderer */}
                                                             {(() => {
-                                                                switch (question.selectedType) {
+                                                                switch (block.selectedType) {
                                                                     case "single-line":
                                                                         return (
                                                                             <input
                                                                                 type="text"
                                                                                 className="form-control mt-3"
                                                                                 placeholder="Your answer"
-                                                                                value={question.inputValue}
+                                                                                value={block.inputValue}
                                                                                 onChange={(e) => {
-                                                                                    const updated = [...questions];
+                                                                                    const updated = [...blocks];
                                                                                     updated[index].inputValue = e.target.value;
-                                                                                    setQuestions(updated);
+                                                                                    setBlocks(updated);
                                                                                 }}
                                                                             />
                                                                         );
@@ -336,11 +258,11 @@ export function TestCreateTemplate() {
                                                                                 className="form-control mt-3"
                                                                                 rows="3"
                                                                                 placeholder="Your detailed answer"
-                                                                                value={question.inputValue}
+                                                                                value={block.inputValue}
                                                                                 onChange={(e) => {
-                                                                                    const updated = [...questions];
+                                                                                    const updated = [...blocks];
                                                                                     updated[index].inputValue = e.target.value;
-                                                                                    setQuestions(updated);
+                                                                                    setBlocks(updated);
                                                                                 }}
                                                                             />
                                                                         );
@@ -350,18 +272,18 @@ export function TestCreateTemplate() {
                                                                                 type="number"
                                                                                 className="form-control mt-3"
                                                                                 placeholder="Enter a number"
-                                                                                value={question.inputValue}
+                                                                                value={block.inputValue}
                                                                                 onChange={(e) => {
-                                                                                    const updated = [...questions];
+                                                                                    const updated = [...blocks];
                                                                                     updated[index].inputValue = e.target.value;
-                                                                                    setQuestions(updated);
+                                                                                    setBlocks(updated);
                                                                                 }}
                                                                             />
                                                                         );
                                                                     case "one-from-list":
                                                                         return (
                                                                             <div className="form-check mt-3">
-                                                                                {question.options.map((option) => (
+                                                                                {block.options.map((option) => (
                                                                                     <div key={option.index}
                                                                                          className="form-check">
                                                                                         <input
@@ -370,11 +292,11 @@ export function TestCreateTemplate() {
                                                                                             name={`oneFromList-${index}`}
                                                                                             id={`radio-${option.index}`}
                                                                                             value={option.label}
-                                                                                            checked={question.inputValue === option.label}
+                                                                                            checked={block.inputValue === option.label}
                                                                                             onChange={(e) => {
-                                                                                                const updated = [...questions];
+                                                                                                const updated = [...blocks];
                                                                                                 updated[index].inputValue = e.target.value;
-                                                                                                setQuestions(updated);
+                                                                                                setBlocks(updated);
                                                                                             }}
                                                                                         />
                                                                                         <label
@@ -389,7 +311,7 @@ export function TestCreateTemplate() {
                                                                     case "few-from-list":
                                                                         return (
                                                                             <div className="form-check mt-3">
-                                                                                {question.options.map((option) => (
+                                                                                {block.options.map((option) => (
                                                                                     <div key={option.index}
                                                                                          className="form-check">
                                                                                         <input
@@ -397,15 +319,15 @@ export function TestCreateTemplate() {
                                                                                             className="form-check-input"
                                                                                             id={`checkbox-${option.index}`}
                                                                                             value={option.label}
-                                                                                            checked={Array.isArray(question.inputValue) && question.inputValue.includes(option.label)}
+                                                                                            checked={Array.isArray(block.inputValue) && block.inputValue.includes(option.label)}
                                                                                             onChange={(e) => {
-                                                                                                const updated = [...questions];
+                                                                                                const updated = [...blocks];
                                                                                                 const checked = e.target.checked;
                                                                                                 const current = updated[index].inputValue || [];
                                                                                                 updated[index].inputValue = checked
                                                                                                     ? [...current, option.label]
                                                                                                     : current.filter((v) => v !== option.label);
-                                                                                                setQuestions(updated);
+                                                                                                setBlocks(updated);
                                                                                             }}
                                                                                         />
                                                                                         <label
@@ -421,11 +343,29 @@ export function TestCreateTemplate() {
                                                                         return null;
                                                                 }
                                                             })()}
+
+                                                            <div className="form-check form-check-inline mt-3">
+                                                                <input
+                                                                    className="form-check-input"
+                                                                    type="checkbox"
+                                                                    id={`required-${index}`}
+                                                                    checked={block.required}
+                                                                    onChange={(e) => {
+                                                                        const updated = [...blocks];
+                                                                        updated[index].required = e.target.checked;
+                                                                        setBlocks(updated);
+                                                                    }}
+                                                                />
+                                                                <label className="form-check-label"
+                                                                       htmlFor={`required-${index}`}>
+                                                                    Required
+                                                                </label>
+                                                            </div>
                                                         </div>
 
                                                     )}
 
-                                                    {question.type === 'image' && (
+                                                    {block.type === 'image' && (
                                                         <>
                                                             <input
                                                                 type="file"
@@ -435,18 +375,18 @@ export function TestCreateTemplate() {
                                                                     if (file) {
                                                                         const reader = new FileReader();
                                                                         reader.onload = () => {
-                                                                            const updated = [...questions];
+                                                                            const updated = [...blocks];
                                                                             updated[index].file = file;
                                                                             updated[index].preview = reader.result;
-                                                                            setQuestions(updated);
+                                                                            setBlocks(updated);
                                                                         };
                                                                         reader.readAsDataURL(file);
                                                                     }
                                                                 }}
                                                             />
-                                                            {question.preview && (
+                                                            {block.preview && (
                                                                 <img
-                                                                    src={question.preview}
+                                                                    src={block.preview}
                                                                     alt="Uploaded"
                                                                     style={{maxWidth: '100%', marginTop: '1rem'}}
                                                                 />
@@ -461,10 +401,11 @@ export function TestCreateTemplate() {
                                 </Draggable>
                             ))}
                             {provided.placeholder}
+
                         </div>
                     )}
                 </Droppable>
-            </div>
+            </AppHeader>
         </DragDropContext>
     );
 }
