@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 
 const TemplateFinder = () => {
@@ -8,7 +8,12 @@ const TemplateFinder = () => {
     const api = process.env.REACT_APP_API_ADDRESS;
     const handleFetchTemplate = async () => {
         try {
-            const response = await axios.get(`${api}/templates/${templateId}`);
+            const response = await axios.get(`${api}/templates/${templateId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            });
             setTemplateData(response.data);
             setError(null);
         } catch (err) {

@@ -4,7 +4,6 @@ import {useEffect, useState} from 'react';
 
 import {lightTheme, darkTheme} from './styles/theme';
 import ProtectedRoute from './scripts/ProtectedRoute';
-import CreateTemplatePage from './views/CreateTemplate';
 import BootstrapTestPage from './BootstrapTestPage';
 import TemplateFinder from './views/FindTemplate';
 import {TestCreateTemplate} from "./views/TestCreateTemplate";
@@ -16,6 +15,7 @@ import LogoutHandler from './scripts/LogoutHandler';
 export default function App() {
     const [theme, setTheme] = useState('light');
 
+
     useEffect(() => {
         const storedTheme = localStorage.getItem('theme');
         if (storedTheme === 'dark' || storedTheme === 'light') {
@@ -23,7 +23,6 @@ export default function App() {
         }
     }, []);
 
-    // Save theme to localStorage on change
     useEffect(() => {
         localStorage.setItem('theme', theme);
     }, [theme]);
@@ -43,15 +42,7 @@ export default function App() {
                         path="/"
                         element={
                             <ProtectedRoute>
-                                <BootstrapTestPage toggleTheme={toggleTheme} themeName={currentTheme} />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/create"
-                        element={
-                            <ProtectedRoute>
-                                <CreateTemplatePage toggleTheme={toggleTheme} themeName={currentTheme}/>
+                                <BootstrapTestPage toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
@@ -59,18 +50,22 @@ export default function App() {
                         path="/find"
                         element={
                             <ProtectedRoute>
-                                <TemplateFinder toggleTheme={toggleTheme} themeName={currentTheme}/>
+                                <TemplateFinder toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
                     <Route
-                        path="/test"
+                        path="/create"
                         element={
                             <ProtectedRoute>
                                 <TestCreateTemplate toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="/edit/:id" element={<ProtectedRoute>
+                        <TestCreateTemplate toggleTheme={toggleTheme} theme={currentTheme}/>
+                    </ProtectedRoute>
+                    }/>
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/signup" element={<Register/>}/>
                     <Route path="/logout" element={<LogoutHandler/>}/>
