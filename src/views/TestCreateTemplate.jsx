@@ -65,26 +65,23 @@ export function TestCreateTemplate({toggleTheme}) {
         setBlocks(reordered);
     };
     const uploadImages = async () => {
-        const images = blocks.filter(block => block.type === 'image');
+        const updatedBlocks = [...blocks];
 
-        const results = await Promise.all(
-            images.map(async (block) => {
+        await Promise.all(updatedBlocks.map(async (block, i) => {
+            if (block.type === 'image' && block.file instanceof File && !block.key) {
                 try {
                     const key = await upload(block.file);
-                    return {...block, key};
+                    updatedBlocks[i].key = key;
+                    updatedBlocks[i].preview = getImage(key);
+                    delete updatedBlocks[i].file;
                 } catch (err) {
                     console.error('Upload failed for', block, err);
-                    return {...block, key: null, error: err};
                 }
-            })
-        );
-        setBlocks(prev =>
-            prev.map(b => {
-                if (b.type !== 'image') return b;
-                const updated = results.find(r => r.key === b.key); // Or use r.file.name if needed
-                return updated || b;
-            })
-        );
+            }
+        }));
+
+        setBlocks(updatedBlocks);
+        return updatedBlocks; // 👈 Return the fresh state directly
     };
 
 
@@ -117,7 +114,20 @@ export function TestCreateTemplate({toggleTheme}) {
 
     const submit = async (e) => {
         e.preventDefault();
-        await uploadImages();
+        const updatedBlocks = await uploadImages(); // 👈 Now has the latest keys
+
+        const formJson = updatedBlocks.map((block) => ({
+            type: block.type,
+            key: block.key,
+            title: block.title,
+            questionType: block.questionType,
+            description: block.description,
+            inputValue: block.inputValue,
+            options: block.options,
+            caption: block.caption,
+            preview: block.preview,
+            isRequired: block.isRequired,
+        }));
         console.log(formJson);
         try {
             const response = await axios.post(`${api}/templates/new`, {
@@ -133,6 +143,8 @@ export function TestCreateTemplate({toggleTheme}) {
                         'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
                     }
                 })
+            console.log(response);
+
         } catch (error) {
             console.log(error);
         }
@@ -143,19 +155,6 @@ export function TestCreateTemplate({toggleTheme}) {
             .split(' ')
             .filter(Boolean)
     }
-    const formJson =
-        blocks.map((block) => ({
-            type: block.type,
-            title: block.title,
-            questionType: block.questionType,
-            description: block.description,
-            inputValue: block.inputValue,
-            options: block.options,
-            caption: block.caption,
-            isRequired: block.isRequired,
-            key: block.key,
-        }))
-
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto"; // Reset height

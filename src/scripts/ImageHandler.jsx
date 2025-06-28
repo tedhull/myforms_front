@@ -28,7 +28,5 @@ export async function upload(file) {
 }
 
 export function getImage(key) {
-    const result = `https://pub-2eb7621390ec4e9795dd0c10aeffc404.r2.dev/${key}`;
-    console.log(result);
-    return result;
+    return `https://pub-2eb7621390ec4e9795dd0c10aeffc404.r2.dev/${key}`;
 }
