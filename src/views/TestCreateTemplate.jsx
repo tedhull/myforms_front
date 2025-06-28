@@ -71,7 +71,7 @@ export function TestCreateTemplate({toggleTheme}) {
             images.map(async (block) => {
                 try {
                     const key = await upload(block.file);
-                    return {...block, key}; // ✅ Don't mutate, return new object
+                    return {...block, key};
                 } catch (err) {
                     console.error('Upload failed for', block, err);
                     return {...block, key: null, error: err};
@@ -81,7 +81,7 @@ export function TestCreateTemplate({toggleTheme}) {
         setBlocks(prev =>
             prev.map(b => {
                 if (b.type !== 'image') return b;
-                const updated = results.find(r => r.file === b.file); // Or use r.file.name if needed
+                const updated = results.find(r => r.key === b.key); // Or use r.file.name if needed
                 return updated || b;
             })
         );
