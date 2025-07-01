@@ -7,13 +7,14 @@ import Toolbar from "../components/Toolbar";
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 import {AppHeader} from "../components/AppHeader";
 import axios from "axios";
-import {getImage, upload} from "../scripts/ImageHandler";
+import {getImage} from "../scripts/ImageHandler";
 import Card from "../components/Card";
 import {useParams} from "react-router-dom";
 import {getUserData} from "../scripts/User";
 import Navbar from "../components/Navbar";
+import {TemplateBuilder} from "../scripts/TemplateBuilder"
 
-export function TemplateRedactor({toggleTheme}) {
+export function TestRedactor({toggleTheme}) {
     const api = process.env.REACT_APP_API_ADDRESS;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -55,6 +56,46 @@ export function TemplateRedactor({toggleTheme}) {
             textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"; // Set to scroll height
         }
     }, [description]);
+    const ConfigureUser = () => {
+        const user = getUserData();
+        setUsername(user.username.split('@')[0]);
+        const creatorId = localStorage.getItem("creatorId");
+        const isAdmin = (user.roles.includes('ROLE_ADMIN'));
+
+        if (!id || creatorId == user.id) {
+            setUserStatus('creator');
+        } else if (isAdmin) {
+            setUserStatus('admin');
+        }
+    }
+
+    const addImage = () => {
+        setBlocks([
+            ...blocks,
+            {
+                type: 'image',
+                preview: '',
+                file: null,
+                caption: '',
+                key: '',
+            }
+        ]);
+    }
+
+    const addQuestion = () => {
+        setBlocks([
+            ...blocks,
+            {
+                title: `Question ${blocks.length + 1}`,
+                type: 'question',
+                description: '',
+                questionType: 'single-line',
+                inputValue: '',
+                options: [{index: 1, label: ''}],
+                isRequired: false,
+            },
+        ]);
+    };
 
     const loadTemplate = () => {
         axios.get(`${api}/templates/${id}`, {
@@ -89,6 +130,12 @@ export function TemplateRedactor({toggleTheme}) {
             console.log(error)
         }).finally(() => setIsLoading(false));
     }
+
+    const createForm = (e) => {
+        const builder = new TemplateBuilder(blocks, title, description, tags, topic)
+        builder.submitTemplate(e);
+    }
+
     const handleDragEnd = (result) => {
         if (!result.destination) return;
 
@@ -98,110 +145,11 @@ export function TemplateRedactor({toggleTheme}) {
 
         setBlocks(reordered);
     };
-
-    const uploadImages = async () => {
-        const updatedBlocks = [...blocks];
-
-        await Promise.all(updatedBlocks.map(async (block, i) => {
-            if (block.type === 'image' && block.file instanceof File && !block.key) {
-                try {
-                    const key = await upload(block.file);
-                    updatedBlocks[i].key = key;
-                    updatedBlocks[i].preview = getImage(key);
-                    delete updatedBlocks[i].file;
-                } catch (err) {
-                    console.error('Upload failed for', block, err);
-                }
-            }
-        }));
-
-        setBlocks(updatedBlocks);
-        return updatedBlocks; // 👈 Return the fresh state directly
-    };
-
-    const addImage = () => {
-        setBlocks([
-            ...blocks,
-            {
-                type: 'image',
-                preview: '',
-                file: null,
-                caption: '',
-                key: '',
-            }
-        ]);
-    }
-    const addQuestion = () => {
-        setBlocks([
-            ...blocks,
-            {
-                title: `Question ${blocks.length + 1}`,
-                type: 'question',
-                description: '',
-                questionType: 'single-line',
-                inputValue: '',
-                options: [{index: 1, label: ''}],
-                isRequired: false,
-            },
-        ]);
-    };
-    const ConfigureUser = () => {
-        const user = getUserData();
-        setUsername(user.username.split('@')[0]);
-        const creatorId = localStorage.getItem("creatorId");
-        const isAdmin = (user.roles.includes('ROLE_ADMIN'));
-
-        if (!id || creatorId == user.id) {
-            setUserStatus('creator');
-        } else if (isAdmin) {
-            setUserStatus('admin');
-        }
-    }
-    const submit = async (e) => {
-        e.preventDefault();
-        const updatedBlocks = await uploadImages(); // 👈 Now has the latest keys
-
-        const formJson = updatedBlocks.map((block) => ({
-            type: block.type,
-            key: block.key,
-            title: block.title,
-            questionType: block.questionType,
-            description: block.description,
-            inputValue: block.inputValue,
-            options: block.options,
-            caption: block.caption,
-            preview: block.preview,
-            isRequired: block.isRequired,
-        }));
-        try {
-            const response = await axios.post(`${api}/templates/new`, {
-                    title: title,
-                    description: description,
-                    tags: createTags(),
-                    topic: topic,
-                    fields: formJson,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-                    }
-                })
-            console.log(response);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    const createTags = () => {
-        return tags
-            .split(' ')
-            .filter(Boolean)
-    }
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <AppHeader className="App-header">
                 <Navbar
-                    save={(e) => submit(e)}
+                    save={createForm}
                     toggleTheme={toggleTheme}
                     userStatus={userStatus}
                     username={username}

@@ -6,11 +6,12 @@ import {lightTheme, darkTheme} from './styles/theme';
 import ProtectedRoute from './scripts/ProtectedRoute';
 import BootstrapTestPage from './BootstrapTestPage';
 import TemplateFinder from './views/FindTemplate';
-import {TemplateRedactor} from "./views/TemplateRedactor";
 import GlobalStyle from './styles/GlobalStyle';
 import Login from './views/Login';
 import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
+import {TestRedactor} from "./components/TestRedactor";
+
 export default function App() {
     const [theme, setTheme] = useState('');
 
@@ -19,8 +20,7 @@ export default function App() {
         const storedTheme = localStorage.getItem('theme');
         if (storedTheme === 'dark' || storedTheme === 'light') {
             setTheme(storedTheme);
-        }
-        else setTheme('light');
+        } else setTheme('light');
     }, []);
 
     useEffect(() => {
@@ -58,12 +58,12 @@ export default function App() {
                         path="/create"
                         element={
                             <ProtectedRoute>
-                                <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
+                                <TestRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
                     <Route path="/edit/:id" element={<ProtectedRoute>
-                        <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
+                        <TestRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                     </ProtectedRoute>
                     }/>
                     <Route path="/login" element={<Login/>}/>
