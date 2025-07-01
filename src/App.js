@@ -1,19 +1,18 @@
 import {ThemeProvider, createGlobalStyle} from 'styled-components';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import {useEffect, useState} from 'react';
-
+import './App.css';
 import {lightTheme, darkTheme} from './styles/theme';
 import ProtectedRoute from './scripts/ProtectedRoute';
 import BootstrapTestPage from './BootstrapTestPage';
 import TemplateFinder from './views/FindTemplate';
-import {TestCreateTemplate} from "./views/TestCreateTemplate";
+import {TemplateRedactor} from "./views/TemplateRedactor";
 import GlobalStyle from './styles/GlobalStyle';
 import Login from './views/Login';
 import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
-
 export default function App() {
-    const [theme, setTheme] = useState('light');
+    const [theme, setTheme] = useState('');
 
 
     useEffect(() => {
@@ -21,6 +20,7 @@ export default function App() {
         if (storedTheme === 'dark' || storedTheme === 'light') {
             setTheme(storedTheme);
         }
+        else setTheme('light');
     }, []);
 
     useEffect(() => {
@@ -58,12 +58,12 @@ export default function App() {
                         path="/create"
                         element={
                             <ProtectedRoute>
-                                <TestCreateTemplate toggleTheme={toggleTheme} theme={currentTheme}/>
+                                <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
                     <Route path="/edit/:id" element={<ProtectedRoute>
-                        <TestCreateTemplate toggleTheme={toggleTheme} theme={currentTheme}/>
+                        <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                     </ProtectedRoute>
                     }/>
                     <Route path="/login" element={<Login/>}/>

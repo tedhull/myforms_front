@@ -10,8 +10,10 @@ import axios from "axios";
 import {getImage, upload} from "../scripts/ImageHandler";
 import Card from "../components/Card";
 import {useParams} from "react-router-dom";
+import {getUserData} from "../scripts/User";
+import Navbar from "../components/Navbar";
 
-export function TestCreateTemplate({toggleTheme}) {
+export function TemplateRedactor({toggleTheme}) {
     const api = process.env.REACT_APP_API_ADDRESS;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -20,41 +22,73 @@ export function TestCreateTemplate({toggleTheme}) {
     const [blocks, setBlocks] = useState([]);
     const [topic, setTopic] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const navType = performance.getEntriesByType("navigation")[0]?.type;
     const {id} = useParams();
+    const [userStatus, setUserStatus] = useState('viewer');
+    const [username, setUsername] = useState("Guest");
 
     useEffect(() => {
-        if (id) {
-            axios.get(`${api}/templates/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                }
-            }).then((response) => {
-                const data = response.data;
-                setTitle(data.title);
-                setDescription(data.description);
-                setTags(data.tags.join(' '));
-                setTopic(data.topic);
-                const processedBlocks = data.fields.map((field) => {
-                    if (field.type === "image") {
-                        return {
-                            type: "image",
-                            caption: field.caption || '',
-                            key: field.key || '',
-                            preview: getImage(field.key),
-                        }
-                    } else return {
-                        ...field,
+        if (!isLoading) {
+            localStorage.setItem("formLayout", JSON.stringify(blocks));
+        }
+    }, [blocks, isLoading]);
+    useEffect(() => {
+        if (navType === "reload") {
+            const saved = localStorage.getItem("formLayout");
+            if (saved) {
+                setBlocks(JSON.parse(saved));
+            }
+            setIsLoading(false);
+        }
+    }, []);
+    useEffect(() => {
+        if (id && navType !== "reload") {
+            loadTemplate();
+        } else {
+            setIsLoading(false);
+            ConfigureUser();
+        }
+    }, [navType, id,])
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto"; // Reset height
+            textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"; // Set to scroll height
+        }
+    }, [description]);
 
-                        options: field.options || [],
+    const loadTemplate = () => {
+        axios.get(`${api}/templates/${id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            }
+        }).then((response) => {
+            const data = response.data;
+            console.log(data)
+            localStorage.setItem("creatorId", data.creator['id']);
+            setTitle(data.title);
+            setDescription(data.description);
+            setTags(data.tags.join(' '));
+            setTopic(data.topic);
+            const processedBlocks = data.fields.map((field) => {
+                if (field.type === "image") {
+                    return {
+                        type: "image",
+                        caption: field.caption || '',
+                        key: field.key || '',
+                        preview: getImage(field.key),
                     }
-                })
-                setBlocks(processedBlocks);
-            }).catch((error) => {
-                console.log(error)
-            }).finally(() => setIsLoading(false));
-        } else setIsLoading(false);
-    }, [id, api])
+                } else return {
+                    ...field,
 
+                    options: field.options || [],
+                }
+            })
+            ConfigureUser();
+            setBlocks(processedBlocks);
+        }).catch((error) => {
+            console.log(error)
+        }).finally(() => setIsLoading(false));
+    }
     const handleDragEnd = (result) => {
         if (!result.destination) return;
 
@@ -64,6 +98,7 @@ export function TestCreateTemplate({toggleTheme}) {
 
         setBlocks(reordered);
     };
+
     const uploadImages = async () => {
         const updatedBlocks = [...blocks];
 
@@ -83,7 +118,6 @@ export function TestCreateTemplate({toggleTheme}) {
         setBlocks(updatedBlocks);
         return updatedBlocks; // 👈 Return the fresh state directly
     };
-
 
     const addImage = () => {
         setBlocks([
@@ -111,7 +145,18 @@ export function TestCreateTemplate({toggleTheme}) {
             },
         ]);
     };
+    const ConfigureUser = () => {
+        const user = getUserData();
+        setUsername(user.username.split('@')[0]);
+        const creatorId = localStorage.getItem("creatorId");
+        const isAdmin = (user.roles.includes('ROLE_ADMIN'));
 
+        if (!id || creatorId == user.id) {
+            setUserStatus('creator');
+        } else if (isAdmin) {
+            setUserStatus('admin');
+        }
+    }
     const submit = async (e) => {
         e.preventDefault();
         const updatedBlocks = await uploadImages(); // 👈 Now has the latest keys
@@ -128,7 +173,6 @@ export function TestCreateTemplate({toggleTheme}) {
             preview: block.preview,
             isRequired: block.isRequired,
         }));
-        console.log(formJson);
         try {
             const response = await axios.post(`${api}/templates/new`, {
                     title: title,
@@ -149,35 +193,36 @@ export function TestCreateTemplate({toggleTheme}) {
             console.log(error);
         }
     }
-
     const createTags = () => {
         return tags
             .split(' ')
             .filter(Boolean)
     }
-    useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto"; // Reset height
-            textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"; // Set to scroll height
-        }
-    }, [description]);
-
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <AppHeader className="App-header">
+                <Navbar
+                    save={(e) => submit(e)}
+                    toggleTheme={toggleTheme}
+                    userStatus={userStatus}
+                    username={username}
+                />
+                <div className={"mt-5"}></div>
                 <HeaderBlock title={title} description={description} textareaRef={textareaRef} tags={tags}
                              setTags={setTags} setDescription={setDescription}
                              setTitle={setTitle}
                              topic={topic}
                              setTopic={setTopic}
+                             userStatus={userStatus}
                 />
-                <Toolbar toggleTheme={toggleTheme} addImage={addImage} addQuestion={addQuestion}/>
-                <button onClick={submit}>SAVE TEMPLATE</button>
+                <Toolbar toggleTheme={toggleTheme} addImage={addImage} addQuestion={addQuestion}
+                         userStatus={userStatus}/>
                 <Droppable droppableId="questions" direction="vertical">
                     {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
                             {blocks.map((block, index) => (
-                                <Draggable key={index} draggableId={`q-${index}`} index={index}>
+                                <Draggable key={index} draggableId={`q-${index}`} index={index}
+                                           isDragDisabled={userStatus === "viewer"}>
                                     {(provided) => (
                                         <div
                                             className="container mt-5 d-flex justify-content-center"
@@ -189,7 +234,9 @@ export function TestCreateTemplate({toggleTheme}) {
                                                 block={block}
                                                 index={index}
                                                 blocks={blocks}
-                                                setBlocks={setBlocks}>
+                                                setBlocks={setBlocks}
+                                                userStatus={userStatus}
+                                            >
                                             </Card>
                                         </div>
                                     )}
@@ -200,6 +247,7 @@ export function TestCreateTemplate({toggleTheme}) {
                         </div>
                     )}
                 </Droppable>
+                <div className={"mt-5"}></div>
             </AppHeader>
         </DragDropContext>
     );

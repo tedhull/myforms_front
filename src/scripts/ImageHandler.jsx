@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export async function upload(file) {
+    if (!file) return '';
     const api = process.env.REACT_APP_API_ADDRESS;
     const presign = await axios.post(`${api}/blob/presign`, {
 

@@ -5,16 +5,20 @@ export const lightTheme = {
     placeholder: "#8f8d8d",
     toolbar: '#f1f1f1',
     inputBackground: "#fff",
+    redactorNavbarBackground: '#ffffff',
+    blockBorder: '#c8c8c8',
     inputBorder: "#ccc",
     accent: "#007bff",
 
 };
 
 export const darkTheme = {
-    background: "#1a1a1a",
+    background: "#111117",
     text: "#fff",
-    placeholder: "#8a8989",
-    card: '#1e1e1e',
+    placeholder: "#636363",
+    redactorNavbarBackground: '#1b1b25',
+    blockBorder: '#606060',
+    card: '#191919',
     inputBackground: "#2c2c2c",
     toolbar: '#2b2b2b',
     inputBorder: "#444",

@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import {createGlobalStyle} from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
     input, textarea, select {
@@ -18,9 +18,10 @@ const GlobalStyle = createGlobalStyle`
         transition: background 0.3s ease, color 0.3s ease;
     }
 
-    .card {
+    .card, card:disabled {
         background-color: ${({theme}) => theme.card} !important;
         color: ${({theme}) => theme.text};
+        border: 1px solid ${({theme}) => theme.blockBorder};
 
         input::placeholder, textarea::placeholder {
             color: ${({theme}) => theme.placeholder};
@@ -28,10 +29,38 @@ const GlobalStyle = createGlobalStyle`
 
     }
 
+    input:disabled,
+    textarea:disabled,
+    select:disabled {
+        background-color: ${({theme}) => theme.inputBackground} !important;
+        color: ${({theme}) => theme.text} !important;
+        opacity: 1; /* Optional: prevent graying out */
+        cursor: not-allowed;
+    }
+
+    input::placeholder:disabled,
+    textarea::placeholder:disabled {
+        color: ${({theme}) => theme.placeholder} !important;
+    }
+
+    .redactor-navbar {
+        background-color: ${({theme}) => theme.redactorNavbarBackground};
+
+        input::placeholder, textarea::placeholder {
+            color: ${({theme}) => theme.placeholder};
+            
+        }
+    }
+
+    .navbar-border {
+        border-bottom: 1px solid ${({theme}) => theme.blockBorder};
+    }
+
+
     .card:focus {
         background-color: ${({theme}) => theme.card} !important;
         color: ${({theme}) => theme.text};
-        
+
         input::placeholder, textarea::placeholder {
             color: ${({theme}) => theme.placeholder};
         }
@@ -44,7 +73,7 @@ const GlobalStyle = createGlobalStyle`
     input.form-control,
     textarea.form-control,
     select.form-control {
-        
+
         background-color: ${({theme}) => theme.inputBackground};
         color: ${({theme}) => theme.text};
         border: 1px solid ${({theme}) => theme.inputBorder};
@@ -55,18 +84,16 @@ const GlobalStyle = createGlobalStyle`
     select.form-control:focus {
         border-color: ${({theme}) => theme.accent};
         background-color: ${({theme}) => theme.inputBackground};
-        color: ${({theme}) => theme.text} ;
+        color: ${({theme}) => theme.text};
         outline: none;
         box-shadow: 0 0 0 0.2rem ${({theme}) => theme.accent}33;
     }
 
-    /* Style dropdown options */
     select.form-control option {
         background-color: ${({theme}) => theme.inputBackground};
         color: ${({theme}) => theme.text};
     }
 
-    /* Add dropdown icon manually if needed */
     select.form-control {
         appearance: none;
         -webkit-appearance: none;
