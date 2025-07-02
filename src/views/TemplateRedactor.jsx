@@ -7,11 +7,13 @@ import Toolbar from "../components/Toolbar";
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 import {AppHeader} from "../components/AppHeader";
 import axios from "axios";
-import {getImage, upload} from "../scripts/ImageHandler";
+import {getImage} from "../scripts/ImageHandler";
 import Card from "../components/Card";
-import {useParams} from "react-router-dom";
+import {data, useParams} from "react-router-dom";
 import {getUserData} from "../scripts/User";
 import Navbar from "../components/Navbar";
+import {TemplateBuilder} from "../scripts/TemplateBuilder"
+import {TemplateUpdater} from "../scripts/TemplateUpdater";
 
 export function TemplateRedactor({toggleTheme}) {
     const api = process.env.REACT_APP_API_ADDRESS;
@@ -26,21 +28,32 @@ export function TemplateRedactor({toggleTheme}) {
     const {id} = useParams();
     const [userStatus, setUserStatus] = useState('viewer');
     const [username, setUsername] = useState("Guest");
-
     useEffect(() => {
         if (!isLoading) {
-            localStorage.setItem("formLayout", JSON.stringify(blocks));
+            localStorage.setItem("formLayout", JSON.stringify({
+                title: title,
+                description: description,
+                tags: tags,
+                topic: topic,
+                blocks: blocks
+            }));
         }
-    }, [blocks, isLoading]);
+    }, [blocks, isLoading, title, description, tags, topic]);
     useEffect(() => {
         if (navType === "reload") {
-            const saved = localStorage.getItem("formLayout");
-            if (saved) {
-                setBlocks(JSON.parse(saved));
+            const layout = localStorage.getItem("formLayout");
+            if (layout) {
+                const data = JSON.parse(layout);
+                setTitle(data.title);
+                setDescription(data.description);
+                setTags(data.tags);
+                setTopic(data.topic);
+                setBlocks(data.blocks)
+
             }
             setIsLoading(false);
         }
-    }, []);
+    }, [navType]);
     useEffect(() => {
         if (id && navType !== "reload") {
             loadTemplate();
@@ -48,7 +61,7 @@ export function TemplateRedactor({toggleTheme}) {
             setIsLoading(false);
             ConfigureUser();
         }
-    }, [navType, id,])
+    }, [navType, id])
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto"; // Reset height
@@ -56,6 +69,45 @@ export function TemplateRedactor({toggleTheme}) {
         }
     }, [description]);
 
+    const ConfigureUser = () => {
+        const user = getUserData();
+        setUsername(user.username.split('@')[0]);
+        const creatorId = localStorage.getItem("creatorId");
+        const isAdmin = (user.roles.includes('ROLE_ADMIN'));
+        if (!id || creatorId == user.id) {
+            setUserStatus('creator');
+        } else if (isAdmin) {
+            setUserStatus('admin');
+        }
+    }
+    const addImage = () => {
+        setBlocks([
+            ...blocks,
+            {
+                id: -1,
+                type: 'image',
+                preview: '',
+                file: null,
+                caption: '',
+                key: '',
+            }
+        ]);
+    }
+    const addQuestion = () => {
+        setBlocks([
+            ...blocks,
+            {
+                id: -1,
+                title: `Question ${blocks.length + 1}`,
+                type: 'question',
+                description: '',
+                questionType: 'single-line',
+                inputValue: '',
+                options: [{index: 1, label: ''}],
+                isRequired: false,
+            },
+        ]);
+    };
     const loadTemplate = () => {
         axios.get(`${api}/templates/${id}`, {
             headers: {
@@ -63,12 +115,12 @@ export function TemplateRedactor({toggleTheme}) {
             }
         }).then((response) => {
             const data = response.data;
-            console.log(data)
             localStorage.setItem("creatorId", data.creator['id']);
             setTitle(data.title);
             setDescription(data.description);
             setTags(data.tags.join(' '));
             setTopic(data.topic);
+            localStorage.setItem('original', JSON.stringify(data));
             const processedBlocks = data.fields.map((field) => {
                 if (field.type === "image") {
                     return {
@@ -87,7 +139,14 @@ export function TemplateRedactor({toggleTheme}) {
             setBlocks(processedBlocks);
         }).catch((error) => {
             console.log(error)
-        }).finally(() => setIsLoading(false));
+        }).finally(() => {
+            setIsLoading(false);
+            return data;
+        });
+    }
+    const createForm = (e) => {
+        const builder = new TemplateBuilder(blocks, title, description, createTags(), topic)
+        builder.submitTemplate(e);
     }
     const handleDragEnd = (result) => {
         if (!result.destination) return;
@@ -99,112 +158,31 @@ export function TemplateRedactor({toggleTheme}) {
         setBlocks(reordered);
     };
 
-    const uploadImages = async () => {
-        const updatedBlocks = [...blocks];
-
-        await Promise.all(updatedBlocks.map(async (block, i) => {
-            if (block.type === 'image' && block.file instanceof File && !block.key) {
-                try {
-                    const key = await upload(block.file);
-                    updatedBlocks[i].key = key;
-                    updatedBlocks[i].preview = getImage(key);
-                    delete updatedBlocks[i].file;
-                } catch (err) {
-                    console.error('Upload failed for', block, err);
-                }
-            }
-        }));
-
-        setBlocks(updatedBlocks);
-        return updatedBlocks; // 👈 Return the fresh state directly
-    };
-
-    const addImage = () => {
-        setBlocks([
-            ...blocks,
-            {
-                type: 'image',
-                preview: '',
-                file: null,
-                caption: '',
-                key: '',
-            }
-        ]);
-    }
-    const addQuestion = () => {
-        setBlocks([
-            ...blocks,
-            {
-                title: `Question ${blocks.length + 1}`,
-                type: 'question',
-                description: '',
-                questionType: 'single-line',
-                inputValue: '',
-                options: [{index: 1, label: ''}],
-                isRequired: false,
-            },
-        ]);
-    };
-    const ConfigureUser = () => {
-        const user = getUserData();
-        setUsername(user.username.split('@')[0]);
-        const creatorId = localStorage.getItem("creatorId");
-        const isAdmin = (user.roles.includes('ROLE_ADMIN'));
-
-        if (!id || creatorId == user.id) {
-            setUserStatus('creator');
-        } else if (isAdmin) {
-            setUserStatus('admin');
-        }
-    }
-    const submit = async (e) => {
-        e.preventDefault();
-        const updatedBlocks = await uploadImages(); // 👈 Now has the latest keys
-
-        const formJson = updatedBlocks.map((block) => ({
-            type: block.type,
-            key: block.key,
-            title: block.title,
-            questionType: block.questionType,
-            description: block.description,
-            inputValue: block.inputValue,
-            options: block.options,
-            caption: block.caption,
-            preview: block.preview,
-            isRequired: block.isRequired,
-        }));
-        try {
-            const response = await axios.post(`${api}/templates/new`, {
-                    title: title,
-                    description: description,
-                    tags: createTags(),
-                    topic: topic,
-                    fields: formJson,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-                    }
-                })
-            console.log(response);
-        } catch (error) {
-            console.log(error);
-        }
-    }
     const createTags = () => {
         return tags
             .split(' ')
             .filter(Boolean)
     }
+    const applyChanges = async (e) => {
+        const updater = new TemplateUpdater(title, description, createTags(), topic, blocks, JSON.parse(localStorage.getItem("original")));
+        await updater.submit(e).then((result) => {
+            if (result.message === "update denied") {
+                console.log(result.message);
+            } else {
+                localStorage.setItem("original", JSON.stringify(result.data));
+            }
+        })
+    }
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <AppHeader className="App-header">
                 <Navbar
-                    save={(e) => submit(e)}
+                    save={createForm}
                     toggleTheme={toggleTheme}
                     userStatus={userStatus}
                     username={username}
+                    editing={id != null}
+                    edit={applyChanges}
                 />
                 <div className={"mt-5"}></div>
                 <HeaderBlock title={title} description={description} textareaRef={textareaRef} tags={tags}

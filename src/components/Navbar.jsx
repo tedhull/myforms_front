@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Navbar({save, toggleTheme, userStatus, username}) {
+export default function Navbar({save, toggleTheme, userStatus, username, edit, editing}) {
     return (
 
         <nav className="navbar redactor-navbar fixed-top navbar-border navbar-expand-lg px-3">
@@ -10,18 +10,22 @@ export default function Navbar({save, toggleTheme, userStatus, username}) {
                 Myforms
             </a>
             <div className="d-flex position-relative" role="search">
-                <input className="form-control search-line me-2" type="search" placeholder="Find Template" aria-label="Search"/>
+                <input className="form-control search-line me-2" type="search" placeholder="Find Template"
+                       aria-label="Search"/>
                 <button className="btn btn-primary">Search</button>
             </div>
             <div className="ms-auto d-flex gap-2">
-                {userStatus !== "viewer" &&
+                {userStatus !== "viewer" && !editing &&
                     (<button className="btn btn-primary" onClick={save}>Save</button>)}
+                {userStatus !== "viewer" && editing &&
+                    (<button className={"btn btn-primary"} onClick={edit}>Save</button>)}
                 {userStatus === "creator" && (
                     <button className="btn btn-primary">Publish</button>
                 )}
                 {userStatus !== "creator" && (
                     <button className="btn btn-primary" onClick={save}>Add To My Templates </button>
                 )}
+
                 <div className="dropdown">
                     <button
                         className="btn btn-secondary dropdown-toggle"

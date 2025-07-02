@@ -25,6 +25,7 @@ export class TemplateBuilder {
                 }
             }
         }));
+        console.log(updatedBlocks);
         return updatedBlocks;
     };
 
@@ -48,7 +49,7 @@ export class TemplateBuilder {
             const response = await axios.post(`${api}/templates/new`, {
                     title: this.title,
                     description: this.description,
-                    tags: this.createTags(),
+                    tags: this.tags,
                     topic: this.topic,
                     fields: formJson,
                 },
@@ -65,9 +66,4 @@ export class TemplateBuilder {
         }
     }
 
-    createTags = () => {
-        return this.tags
-            .split(' ')
-            .filter(Boolean)
-    }
 }

@@ -10,7 +10,7 @@ import GlobalStyle from './styles/GlobalStyle';
 import Login from './views/Login';
 import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
-import {TestRedactor} from "./components/TestRedactor";
+import {TemplateRedactor} from "./views/TemplateRedactor";
 
 export default function App() {
     const [theme, setTheme] = useState('');
@@ -58,12 +58,12 @@ export default function App() {
                         path="/create"
                         element={
                             <ProtectedRoute>
-                                <TestRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
+                                <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
                     <Route path="/edit/:id" element={<ProtectedRoute>
-                        <TestRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
+                        <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                     </ProtectedRoute>
                     }/>
                     <Route path="/login" element={<Login/>}/>
