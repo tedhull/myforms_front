@@ -1,4 +1,5 @@
 import axios from "axios";
+import {getImage, upload} from "./ImageHandler";
 
 export class TemplateUpdater {
     constructor(title, description, tags, topic, blocks, original) {
@@ -11,9 +12,28 @@ export class TemplateUpdater {
         this.id = original.id;
     }
 
+    uploadImages = async (blocks) => {
+        const updatedBlocks = [...blocks];
+
+        await Promise.all(updatedBlocks.map(async (block, i) => {
+            if (block.type === 'image' && block.file instanceof File) {
+                try {
+                    const key = await upload(block.file);
+                    updatedBlocks[i].key = key;
+                    updatedBlocks[i].preview = getImage(key);
+                    console.log(key);
+                    delete updatedBlocks[i].file;
+                } catch (err) {
+                    console.error('Upload failed for', block, err);
+                }
+            }
+        }));
+        return updatedBlocks;
+    };
+
     submit = async (e) => {
-        const api = process.env.REACT_APP_API_ADDRESS;
         e.preventDefault();
+        const api = process.env.REACT_APP_API_ADDRESS;
         const originalBlocks = this.original.fields;
         this.blocks.map((block, index) => {
             block.position = index;
@@ -33,12 +53,13 @@ export class TemplateUpdater {
         };
         if (!this.hasChanges(getChangedBlocks(), getDeletedBlockIds())) {
             return {
-                message: "update denied"
+                message: "no changes detected"
             };
         }
+        const updatedBlocks = await this.uploadImages(getChangedBlocks());
         try {
             const response = await axios.put(`${api}/templates/update/${this.id}`, {
-                updatedBlocks: getChangedBlocks(),
+                updatedBlocks: updatedBlocks,
                 deletedBlockIds: getDeletedBlockIds(),
                 title: this.title,
                 description: this.description,
@@ -53,7 +74,7 @@ export class TemplateUpdater {
             return response;
 
         } catch (error) {
-            console.error(error);
+            return error;
         }
     }
 

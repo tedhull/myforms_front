@@ -1,12 +1,13 @@
 import {useState} from 'react';
 import {setToken} from "../scripts/TokenManager";
 import axios from "axios";
+import {Navigate, useNavigate} from "react-router-dom";
 
 export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-
+    const navigate = useNavigate();
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -15,7 +16,10 @@ export default function Register() {
                 username,
                 email,
                 password,
-            }).then(res => setToken(res.data.token));
+            }).then(res => {
+                setToken(res.data.token)
+                navigate('/create');
+            });
         } catch (error) {
             console.error(error);
         }

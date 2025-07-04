@@ -133,15 +133,19 @@ export default function Card({index, block, blocks, setBlocks, userStatus}) {
                                         type="button"
                                         onClick={() => {
                                             const updated = [...blocks];
+                                            const nextIndex = updated[index].options.length + 1;
+
                                             updated[index].options.push({
-                                                index: Date.now(),
-                                                label: "",
+                                                index: nextIndex,
+                                                label: `Option ${nextIndex}`,
                                             });
+
                                             setBlocks(updated);
                                         }}
                                     >
                                         ➕ Add Option
                                     </button>
+
                                 </div>
                             )}
                             {(() => {

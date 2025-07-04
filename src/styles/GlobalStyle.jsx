@@ -43,12 +43,20 @@ const GlobalStyle = createGlobalStyle`
         color: ${({theme}) => theme.placeholder} !important;
     }
 
+    .brand-text {
+        color: ${({theme}) => theme.text};
+    }
+
     .redactor-navbar {
         background-color: ${({theme}) => theme.redactorNavbarBackground};
 
+        text {
+            color: crimson;
+        }
+
         input::placeholder, textarea::placeholder {
             color: ${({theme}) => theme.placeholder};
-            
+
         }
     }
 

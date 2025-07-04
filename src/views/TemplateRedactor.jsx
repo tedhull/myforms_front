@@ -9,7 +9,7 @@ import {AppHeader} from "../components/AppHeader";
 import axios from "axios";
 import {getImage} from "../scripts/ImageHandler";
 import Card from "../components/Card";
-import {data, useParams} from "react-router-dom";
+import {data, useNavigate, useParams} from "react-router-dom";
 import {getUserData} from "../scripts/User";
 import Navbar from "../components/Navbar";
 import {TemplateBuilder} from "../scripts/TemplateBuilder"
@@ -28,9 +28,10 @@ export function TemplateRedactor({toggleTheme}) {
     const {id} = useParams();
     const [userStatus, setUserStatus] = useState('viewer');
     const [username, setUsername] = useState("Guest");
+    const navigate = useNavigate();
     useEffect(() => {
         if (!isLoading) {
-            localStorage.setItem("formLayout", JSON.stringify({
+            localStorage.setItem("templateLayout", JSON.stringify({
                 title: title,
                 description: description,
                 tags: tags,
@@ -41,7 +42,7 @@ export function TemplateRedactor({toggleTheme}) {
     }, [blocks, isLoading, title, description, tags, topic]);
     useEffect(() => {
         if (navType === "reload") {
-            const layout = localStorage.getItem("formLayout");
+            const layout = localStorage.getItem("templateLayout");
             if (layout) {
                 const data = JSON.parse(layout);
                 setTitle(data.title);
@@ -103,7 +104,7 @@ export function TemplateRedactor({toggleTheme}) {
                 description: '',
                 questionType: 'single-line',
                 inputValue: '',
-                options: [{index: 1, label: ''}],
+                options: [{index: 1, label: 'Option 1'}],
                 isRequired: false,
             },
         ]);
@@ -125,6 +126,7 @@ export function TemplateRedactor({toggleTheme}) {
                 if (field.type === "image") {
                     return {
                         type: "image",
+                        id: field.id,
                         caption: field.caption || '',
                         key: field.key || '',
                         preview: getImage(field.key),
@@ -144,9 +146,17 @@ export function TemplateRedactor({toggleTheme}) {
             return data;
         });
     }
-    const createForm = (e) => {
+    const createTemplate = async (e) => {
         const builder = new TemplateBuilder(blocks, title, description, createTags(), topic)
-        builder.submitTemplate(e);
+        builder.submitTemplate(e).then(response => {
+                try {
+                    console.log(response);
+                    navigate(`/edit/${response.data.id}`);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        )
     }
     const handleDragEnd = (result) => {
         if (!result.destination) return;
@@ -157,7 +167,6 @@ export function TemplateRedactor({toggleTheme}) {
 
         setBlocks(reordered);
     };
-
     const createTags = () => {
         return tags
             .split(' ')
@@ -166,23 +175,37 @@ export function TemplateRedactor({toggleTheme}) {
     const applyChanges = async (e) => {
         const updater = new TemplateUpdater(title, description, createTags(), topic, blocks, JSON.parse(localStorage.getItem("original")));
         await updater.submit(e).then((result) => {
-            if (result.message === "update denied") {
-                console.log(result.message);
-            } else {
-                localStorage.setItem("original", JSON.stringify(result.data));
-            }
+            console.log(result);
         })
+    }
+    const publishForm = async (e) => {
+        if (id) await applyChanges(e).then((result) => {
+            navigate(`/submit/${id}`)
+        })
+        else {
+            const builder = new TemplateBuilder(blocks,title, description, createTags(), topic)
+            builder.submitTemplate(e).then(response => {
+                try {
+                    navigate(`/submit/${response.data.id}`)
+                }
+                catch (error) {
+                    console.log(error);
+                }
+            })
+        }
     }
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <AppHeader className="App-header">
                 <Navbar
-                    save={createForm}
+                    save={createTemplate}
                     toggleTheme={toggleTheme}
                     userStatus={userStatus}
                     username={username}
                     editing={id != null}
+                    publish={publishForm}
                     edit={applyChanges}
+                    view={"redactor"}
                 />
                 <div className={"mt-5"}></div>
                 <HeaderBlock title={title} description={description} textareaRef={textareaRef} tags={tags}

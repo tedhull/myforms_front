@@ -1,5 +1,5 @@
 import {ThemeProvider, createGlobalStyle} from 'styled-components';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter, Routes, Route,} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import './App.css';
 import {lightTheme, darkTheme} from './styles/theme';
@@ -8,6 +8,7 @@ import BootstrapTestPage from './BootstrapTestPage';
 import TemplateFinder from './views/FindTemplate';
 import GlobalStyle from './styles/GlobalStyle';
 import Login from './views/Login';
+import {Form} from './views/Form';
 import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
 import {TemplateRedactor} from "./views/TemplateRedactor";
@@ -42,7 +43,7 @@ export default function App() {
                         path="/"
                         element={
                             <ProtectedRoute>
-                                <BootstrapTestPage toggleTheme={toggleTheme} theme={currentTheme}/>
+                                <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
                     />
@@ -66,6 +67,10 @@ export default function App() {
                         <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                     </ProtectedRoute>
                     }/>
+                    <Route path={"/submit/:id"} element={<ProtectedRoute>
+                        <Form toggleTheme={toggleTheme}/>
+                    </ProtectedRoute>}
+                    />
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/signup" element={<Register/>}/>
                     <Route path="/logout" element={<LogoutHandler/>}/>

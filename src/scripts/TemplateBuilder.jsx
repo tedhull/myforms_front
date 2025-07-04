@@ -59,10 +59,11 @@ export class TemplateBuilder {
                         'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
                     }
                 })
-            console.log(response);
+            return response;
 
         } catch (error) {
             console.log(error);
+            return error;
         }
     }
 
