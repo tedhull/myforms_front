@@ -120,15 +120,17 @@ export function Form({toggleTheme}) {
         setBlocks(updatedBlocks);
         const hasErrors = updatedBlocks.some(block => block.error !== null);
         if (hasErrors) return;
+
         const questions = blocks.filter(block => block.type === "question");
-        const formJson = questions.map(questions => ({
-            type: questions.questionType,
-            value: questions.inputValue,
-            id: questions.id,
+
+        const formJson = questions.map(question => ({
+            type: question.questionType,
+            value: question.inputValue,
+            id: question.id,
         }));
-        axios.post(`${api}/form/submit`,{
-            templateId:id,
-            formData:formJson
+        axios.post(`${api}/form/submit`, {
+            templateId: id,
+            formData: formJson
         }, {
             headers: {
                 contentType: "application/json",
@@ -137,9 +139,9 @@ export function Form({toggleTheme}) {
         }).then((response) => {
             console.log(response);
         })
-        .catch((error) => {
-            console.log(error);
-        })
+            .catch((error) => {
+                console.log(error);
+            })
     }
     return (
         <div>
