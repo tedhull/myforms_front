@@ -38,27 +38,21 @@ export class TemplateUpdater {
         this.blocks.map((block, index) => {
             block.position = index;
         })
-        const getChangedBlocks = () => {
-            return this.blocks.filter((block, i) => {
-                const original = originalBlocks[i];
-                if (!original) return true; // New block
-                return JSON.stringify(block) !== JSON.stringify(original);
-            });
-        };
+
         const getDeletedBlockIds = () => {
             const currentKeys = this.blocks.map(b => b.id);
             return originalBlocks
                 .filter(orig => !currentKeys.includes(orig.id))
                 .map(orig => orig.id);
         };
-        if (!this.hasChanges(getChangedBlocks(), getDeletedBlockIds())) {
+        if (!this.hasChanges(this.getChangedBlocks(this.original.fields,this.blocks), getDeletedBlockIds())) {
             return {
                 message: "no changes detected"
             };
         }
-        const updatedBlocks = await this.uploadImages(getChangedBlocks());
+        const updatedBlocks = await this.uploadImages(this.getChangedBlocks(this.original.fields,this.blocks), getDeletedBlockIds());
         try {
-            const response = await axios.put(`${api}/templates/update/${this.id}`, {
+            return await axios.put(`${api}/templates/update/${this.id}`, {
                 updatedBlocks: updatedBlocks,
                 deletedBlockIds: getDeletedBlockIds(),
                 title: this.title,
@@ -70,13 +64,20 @@ export class TemplateUpdater {
                     'Content-Type': 'application/json',
                     "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
                 }
-            })
-            return response;
+            });
 
         } catch (error) {
             return error;
         }
     }
+
+    getChangedBlocks = (originalBlocks, blocks) => {
+        return blocks.filter((block, i) => {
+            const original = originalBlocks[i];
+            if (!original) return true; // New block
+            return JSON.stringify(block) !== JSON.stringify(original);
+        });
+    };
 
     hasChanges = (updatedBlocks, deletedIds) => {
         return updatedBlocks.length > 0
@@ -91,4 +92,21 @@ export class TemplateUpdater {
         return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
     }
 
+}
+
+export class FormUpdater extends TemplateUpdater {
+    constructor(original, updated) {
+        super();
+        this.original = original;
+        this.updated = updated
+    }
+
+    submit = async (e) => {
+        if (super.arraysEqual(this.original, this.updated)) return {
+            message: "no changes detected"
+        }
+        const api = process.env.REACT_APP_API_ADDRESS;
+        const updatedBlocks = super.getChangedBlocks(this.original,this.updated);
+        return axios.post()
+    }
 }

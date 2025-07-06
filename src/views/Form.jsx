@@ -12,7 +12,7 @@ import FormCard from "../components/FormCard";
 import FormHeaderBlock from "../components/FormHeaderBlock";
 import {validateBlock} from "../scripts/FormValidator";
 
-export function Form({toggleTheme}) {
+export function Form({toggleTheme, redact}) {
     const api = process.env.REACT_APP_API_ADDRESS;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -25,6 +25,7 @@ export function Form({toggleTheme}) {
     const {id} = useParams();
     const [userStatus, setUserStatus] = useState('viewer');
     const [username, setUsername] = useState("Guest");
+    const [submissionData, setSubmissionData] = useState('');
     useEffect(() => {
         if (!isLoading) {
             localStorage.setItem("formLayout", JSON.stringify({
@@ -52,40 +53,60 @@ export function Form({toggleTheme}) {
         }
     }, [navType]);
     useEffect(() => {
+        if (redact && navType !== "reload") {
+            axios.get(`${api}/form/${id}`, {
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+                }
+            }).then(response => {
+                console.log(response.data);
+                setSubmissionData(response.data);
+            }).catch(error => {
+                console.log(error)
+            });
+        }
+    }, [redact, navType, api, id],);
+    useEffect(() => {
         if (id && navType !== "reload") {
-            loadForm();
+            if (redact && submissionData !== '') loadForm();
+            else if (!redact) {
+                loadForm();
+            }
         } else {
             setIsLoading(false);
             ConfigureUser();
         }
-    }, [navType, id])
+    }, [navType, id, submissionData])
     const ConfigureUser = () => {
         const user = getUserData();
         setUsername(user.username.split('@')[0]);
-        const creatorId = localStorage.getItem("creatorId");
         const isAdmin = (user.roles.includes('ROLE_ADMIN'));
-        if (!id || creatorId == user.id) {
+        if (redact && id && submissionData.data.id == user.id) {
             setUserStatus('creator');
-        } else if (isAdmin) {
-            setUserStatus('admin');
+        } else if (!redact) {
+            setUserStatus('creator');
         }
+        console.log(userStatus);
     }
 
-    const loadForm = () => {
+    const loadForm = async () => {
         axios.get(`${api}/templates/${id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
             }
-        }).then((response) => {
-            const data = response.data;
+        }).then((template) => {
+            const data = template.data;
             localStorage.setItem("creatorId", data.creator['id']);
             setTitle(data.title);
             setDescription(data.description);
             const tagged = data.tags.map(tag => `#${tag}`)
             setTags(tagged.join(' '));
             setTopic(data.topic);
+            console.log(submissionData['data']);
+            const fieldValues = submissionData.data ? JSON.parse(submissionData.data.fields) : [];
             localStorage.setItem('original', JSON.stringify(data));
             const processedBlocks = data.fields.map((field) => {
+                const match = fieldValues ? fieldValues.find(value => value.question.id === field.id) : false;
                 if (field.type === "image") {
                     return {
                         type: "image",
@@ -95,14 +116,14 @@ export function Form({toggleTheme}) {
                     }
                 } else return {
                     ...field,
-
+                    inputValue: match ? match.value[0] : '',
                     options: field.options || [],
                 }
             })
             ConfigureUser();
             setBlocks(processedBlocks);
         }).catch((error) => {
-            console.log(error)
+            console.log(error);
         }).finally(() => {
             setIsLoading(false);
             return data;
@@ -173,6 +194,7 @@ export function Form({toggleTheme}) {
                                 blocks={blocks}
                                 setBlocks={setBlocks}
                                 userStatus={userStatus}
+                                editable={userStatus !== 'viewer'}
                             >
                             </FormCard>
                         </div>

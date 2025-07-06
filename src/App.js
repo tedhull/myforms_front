@@ -68,7 +68,11 @@ export default function App() {
                     </ProtectedRoute>
                     }/>
                     <Route path={"/submit/:id"} element={<ProtectedRoute>
-                        <Form toggleTheme={toggleTheme}/>
+                        <Form toggleTheme={toggleTheme} redact={false}/>
+                    </ProtectedRoute>}
+                    />
+                    <Route path={"/correct/:id"} element={<ProtectedRoute>
+                        <Form toggleTheme={toggleTheme} redact={true}/>
                     </ProtectedRoute>}
                     />
                     <Route path="/login" element={<Login/>}/>

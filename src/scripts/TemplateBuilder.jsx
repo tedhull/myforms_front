@@ -32,26 +32,13 @@ export class TemplateBuilder {
     submitTemplate = async (e) => {
         e.preventDefault();
         const api = process.env.REACT_APP_API_ADDRESS;
-        const updatedBlocks = await this.uploadImages();
-        const formJson = updatedBlocks.map((block) => ({
-            type: block.type,
-            key: block.key,
-            title: block.title,
-            questionType: block.questionType,
-            description: block.description,
-            inputValue: block.inputValue,
-            options: block.options,
-            caption: block.caption,
-            preview: block.preview,
-            isRequired: block.isRequired,
-        }));
         try {
             const response = await axios.post(`${api}/templates/new`, {
                     title: this.title,
                     description: this.description,
                     tags: this.tags,
                     topic: this.topic,
-                    fields: formJson,
+                    fields: await this.uploadImages(),
                 },
                 {
                     headers: {
