@@ -64,7 +64,6 @@ const GlobalStyle = createGlobalStyle`
         border-bottom: 1px solid ${({theme}) => theme.blockBorder};
     }
 
-
     .card:focus {
         background-color: ${({theme}) => theme.card} !important;
         color: ${({theme}) => theme.text};
@@ -73,6 +72,45 @@ const GlobalStyle = createGlobalStyle`
             color: ${({theme}) => theme.placeholder};
         }
     }
+
+    .navbar-center-tabs-container {
+        position: fixed;
+        top: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    table {
+        border-bottom-color: #9000c5;
+    }
+
+    .navbar-center-tabs {
+        pointer-events: auto;
+        background: transparent;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .navbar-center-tabs-container {
+            display: none;
+        }
+    }
+
+    .navbar-center-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        color: ${({theme}) => theme.placeholder};
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.2s;
+    }
+
+    .navbar-center-tabs .nav-link.active {
+        color: ${({theme}) => theme.text};
+        color: ${({theme}) => theme.text};
+        font-weight: 500;
+    }
+
 
     .toolbar {
         background-color: ${({theme}) => theme.toolbar};
@@ -116,6 +154,28 @@ const GlobalStyle = createGlobalStyle`
         background-size: 1rem;
         padding-right: 2rem; /* room for icon */
     }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: ${({theme}) => theme.background} !important;
+        color: ${({theme}) => theme.text};
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    th, td {
+        padding: 0.75rem;
+        border: 1px solid ${({theme}) => theme.blockBorder};
+        color: ${({theme}) => theme.text} !important;
+        background-color: ${({theme}) => theme.tableBackground} !important; /* override Bootstrap white */
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: ${({theme}) => theme.hover} !important;
+    }
+
+
 `;
 
 export default GlobalStyle;

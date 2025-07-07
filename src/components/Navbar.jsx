@@ -1,6 +1,17 @@
 import React from "react";
 
-export default function Navbar({save, toggleTheme, userStatus, username, edit, submit,publish, editing, view}) {
+export default function Navbar({
+                                   save,
+                                   toggleTheme,
+                                   userStatus,
+                                   username,
+                                   edit,
+                                   submit,
+                                   publish,
+                                   editing,
+                                   view,
+                                   templateId
+                               }) {
     return (
 
         <nav className="navbar redactor-navbar fixed-top navbar-border navbar-expand-lg px-3">
@@ -14,6 +25,22 @@ export default function Navbar({save, toggleTheme, userStatus, username, edit, s
                        aria-label="Search"/>
                 <button className="btn btn-primary">Search</button>
             </div>
+
+            {view !== "form" && editing && userStatus !== "viewer" && (
+                <div className="navbar-center-tabs-container">
+                    <ul className="nav nav-underline navbar-center-tabs justify-content-center">
+                        <li className="nav-item">
+                            <a className={`nav-link ${view === "redactor" ? "active" : ""}`}
+                               href={`/edit/${templateId}`}>Redactor</a>
+                        </li>
+                        <li className="nav-item">
+                            <a className={`nav-link ${view === "table" ? "active" : ""}`}
+                               href={`/list/${templateId}`}>Responses</a>
+                        </li>
+                    </ul>
+                </div>
+            )}
+
             <div className="ms-auto d-flex gap-2">
                 {view === "redactor" && (
                     <div className={"ms-auto d-flex gap-2"}>
@@ -55,5 +82,6 @@ export default function Navbar({save, toggleTheme, userStatus, username, edit, s
 
             </div>
         </nav>
-    );
+    )
+        ;
 }

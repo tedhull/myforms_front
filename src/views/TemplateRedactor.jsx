@@ -206,6 +206,7 @@ export function TemplateRedactor({toggleTheme}) {
                     publish={publishForm}
                     edit={applyChanges}
                     view={"redactor"}
+                    templateId={id}
                 />
                 <div className={"mt-5"}></div>
                 <HeaderBlock title={title} description={description} textareaRef={textareaRef} tags={tags}

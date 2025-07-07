@@ -23,6 +23,7 @@ export function Form({toggleTheme, redact}) {
     const [isLoading, setIsLoading] = useState(true);
     const navType = performance.getEntriesByType("navigation")[0]?.type;
     const {id} = useParams();
+    const {userId} = useParams();
     const [userStatus, setUserStatus] = useState('viewer');
     const [username, setUsername] = useState("Guest");
     const [submissionData, setSubmissionData] = useState('');
@@ -54,18 +55,19 @@ export function Form({toggleTheme, redact}) {
     }, [navType]);
     useEffect(() => {
         if (redact && navType !== "reload") {
-            axios.get(`${api}/form/${id}`, {
+            axios.get(`${api}/form/${id}/${userId}`, {
                 headers: {
                     "Authorization": `Bearer ${localStorage.getItem("access_token")}`
                 }
             }).then(response => {
                 console.log(response.data);
                 setSubmissionData(response.data);
+                localStorage.setItem("submission_data", JSON.stringify(response.data));
             }).catch(error => {
                 console.log(error)
             });
         }
-    }, [redact, navType, api, id],);
+    }, [redact, navType, api, id, userId],);
     useEffect(() => {
         if (id && navType !== "reload") {
             if (redact && submissionData !== '') loadForm();
@@ -77,16 +79,22 @@ export function Form({toggleTheme, redact}) {
             ConfigureUser();
         }
     }, [navType, id, submissionData])
+
+    useEffect(() => {
+        if (navType === "reload") {
+            const data = JSON.parse(localStorage.getItem("submission_data"));
+            if (data) setSubmissionData(data);
+        }
+    }, [navType])
     const ConfigureUser = () => {
         const user = getUserData();
         setUsername(user.username.split('@')[0]);
         const isAdmin = (user.roles.includes('ROLE_ADMIN'));
-        if (redact && id && submissionData.data.id == user.id) {
+        if (redact && userId == user.id) {
             setUserStatus('creator');
-        } else if (!redact) {
+        } else if (!redact || isAdmin) {
             setUserStatus('creator');
         }
-        console.log(userStatus);
     }
 
     const loadForm = async () => {
@@ -143,7 +151,7 @@ export function Form({toggleTheme, redact}) {
         if (hasErrors) return;
 
         const questions = blocks.filter(block => block.type === "question");
-
+        console.log(userId);
         const formJson = questions.map(question => ({
             type: question.questionType,
             value: question.inputValue,
@@ -151,6 +159,7 @@ export function Form({toggleTheme, redact}) {
         }));
         axios.post(`${api}/form/submit`, {
             templateId: id,
+            userId: redact ? userId : null,
             formData: formJson
         }, {
             headers: {
@@ -194,7 +203,7 @@ export function Form({toggleTheme, redact}) {
                                 blocks={blocks}
                                 setBlocks={setBlocks}
                                 userStatus={userStatus}
-                                editable={userStatus !== 'viewer'}
+                                restricted={userStatus === 'viewer'}
                             >
                             </FormCard>
                         </div>

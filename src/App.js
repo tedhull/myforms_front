@@ -12,6 +12,7 @@ import {Form} from './views/Form';
 import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
 import {TemplateRedactor} from "./views/TemplateRedactor";
+import {ListForms} from "./views/ListForms";
 
 export default function App() {
     const [theme, setTheme] = useState('');
@@ -66,15 +67,19 @@ export default function App() {
                     <Route path="/edit/:id" element={<ProtectedRoute>
                         <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
                     </ProtectedRoute>
-                    }/>
+                    }/> <Route path="/list/:id" element={<ProtectedRoute>
+                    <ListForms toggleTheme={toggleTheme}/>
+                </ProtectedRoute>
+                }/>
                     <Route path={"/submit/:id"} element={<ProtectedRoute>
                         <Form toggleTheme={toggleTheme} redact={false}/>
                     </ProtectedRoute>}
                     />
-                    <Route path={"/correct/:id"} element={<ProtectedRoute>
-                        <Form toggleTheme={toggleTheme} redact={true}/>
-                    </ProtectedRoute>}
-                    />
+
+                    /><Route path={"/correct/:id/:userId"} element={<ProtectedRoute>
+                    <Form toggleTheme={toggleTheme} redact={true}/>
+                </ProtectedRoute>}
+                />
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/signup" element={<Register/>}/>
                     <Route path="/logout" element={<LogoutHandler/>}/>

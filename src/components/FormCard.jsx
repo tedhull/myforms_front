@@ -1,7 +1,7 @@
 import React from "react";
 import MarkdownRenderer from "./MarkdownRederer";
 
-export default function FormCard({index, block, blocks, setBlocks, editable}) {
+export default function FormCard({index, block, blocks, setBlocks, restricted}) {
     return (
 
         <div className="card shadow" style={{width: "100%", maxWidth: "800px"}}>
@@ -32,7 +32,7 @@ export default function FormCard({index, block, blocks, setBlocks, editable}) {
                                     return (
                                         <input
                                             type="text"
-                                            disabled={!editable}
+                                            disabled={restricted}
                                             className="form-control mt-3"
                                             placeholder="Your answer"
                                             value={block.inputValue}
@@ -48,7 +48,7 @@ export default function FormCard({index, block, blocks, setBlocks, editable}) {
                                         <textarea
                                             className="form-control mt-3"
                                             rows="1"
-                                            disabled={!editable}
+                                            disabled={restricted}
                                             placeholder="Your detailed answer"
                                             value={block.inputValue}
                                             onChange={(e) => {
@@ -63,7 +63,7 @@ export default function FormCard({index, block, blocks, setBlocks, editable}) {
                                         <input
                                             type="text"
                                             inputMode="numeric"
-                                            disabled={!editable}
+                                            disabled={restricted}
                                             className={`form-control mt-3`}
                                             placeholder="Enter number"
                                             pattern="[0-9]*"
@@ -93,7 +93,7 @@ export default function FormCard({index, block, blocks, setBlocks, editable}) {
                                                     </label>
                                                     <input
                                                         type="radio"
-                                                        disabled={!editable}
+                                                        disabled={restricted}
                                                         className="form-check-input"
                                                         name={`oneFromList-${index}`}
                                                         id={`radio-${option.index}`}
@@ -117,7 +117,7 @@ export default function FormCard({index, block, blocks, setBlocks, editable}) {
                                                      className="form-check">
                                                     <input
                                                         type="checkbox"
-                                                        disabled={!editable}
+                                                        disabled={restricted}
                                                         className="form-check-input"
                                                         id={`checkbox-${option.index}`}
                                                         value={option.index || []}
