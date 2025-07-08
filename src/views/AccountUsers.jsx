@@ -7,23 +7,23 @@ import {getUserData} from "../scripts/User";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 
-export function AccountTemplates({toggleTheme}) {
+export function AccountUsers({toggleTheme}) {
     const [username, setUsername] = useState("Guest");
     const api = process.env.REACT_APP_API_ADDRESS;
-    const [templates, setTemplates] = useState([]);
-    const [selectedTemplates, setSelectedTemplates] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [selectedUsers, setSelectedUsers] = useState([]);
     const navigate = useNavigate();
     const [userId, setUserId] = useState('');
     const [userName, setUserName] = useState('');
     const [userStatus, setUserStatus] = useState('user');
     useEffect(() => {
-        axios.get(`${api}/user/templates`, {
+        axios.get(`${api}/user/list`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
             }
         }).then(res => {
             console.log(res.data);
-            setTemplates(JSON.parse(res.data));
+            setUsers(JSON.parse(res.data));
         })
         configureUser();
     }, [api])
@@ -35,41 +35,91 @@ export function AccountTemplates({toggleTheme}) {
         if (user.roles.includes("ROLE_ADMIN")) setUserStatus("admin");
     }
 
-    const allSelected = templates.length > 0 && selectedTemplates.length === templates.length;
+    const allSelected = users.length > 0 && selectedUsers.length === users.length;
     const toggleSelection = (id) => {
-        setSelectedTemplates(prev =>
+        setSelectedUsers(prev =>
             prev.includes(id)
                 ? prev.filter(itemId => itemId !== id)
                 : [...prev, id]
         );
     };
     const toggleSelectAll = () => {
-        if (selectedTemplates.length === templates.length) {
-            setSelectedTemplates([]);
+        if (selectedUsers.length === users.length) {
+            setSelectedUsers([]);
         } else {
-            setSelectedTemplates(templates.map(t => t.id));
+            setSelectedUsers(users.map(t => t.id));
         }
     };
-    const deleteTemplates = async (e) => {
+    const deleteUsers = async (e) => {
         e.preventDefault();
-        await axios.delete(`${api}/templates/delete`, {
+        await axios.delete(`${api}/user/remove`, {
             data: {
-                ids: selectedTemplates
+                ids: selectedUsers
             },
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
             }
         }).then(res => {
-            setTemplates(prev =>
-                prev.filter(template => !selectedTemplates.includes(template.id))
+            setUsers(prev =>
+                prev.filter(user => !selectedUsers.includes(user.id))
             );
-
-            setSelectedTemplates([]);
+            setSelectedUsers([]);
         })
     }
-
-    const handleClick = () => {
-        navigate('/create')
+    const unbanUsers = async (e) => {
+        e.preventDefault();
+        await axios.post(`${api}/user/unban`, {
+                ids: selectedUsers
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            }).then(res => {
+            console.log(res);
+        })
+    }
+    const banUsers = async (e) => {
+        e.preventDefault();
+        await axios.post(`${api}/user/ban`, {
+                ids: selectedUsers
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            }).then(res => {
+            console.log(res);
+        })
+    }
+    const promoteUsers = async (e) => {
+        e.preventDefault();
+        await axios.post(`${api}/user/promote`, {
+                ids: selectedUsers
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            }).then(res => {
+            console.log(res);
+        })
+    }
+    const restrictSelectedUsers = async (e) => {
+        e.preventDefault();
+        await axios.post(`${api}/user/restrict`, {
+                ids: selectedUsers
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            }).then(res => {
+            console.log(res);
+        })
     }
     return (
         <AppHeader className="App-header">
@@ -77,10 +127,14 @@ export function AccountTemplates({toggleTheme}) {
                 toggleTheme={toggleTheme}
                 username={username}
                 view={"account"}
-                accountSection={"templates"}
-                hasSelectedRows={selectedTemplates.length > 0}
+                accountSection={"users"}
+                hasSelectedRows={selectedUsers.length > 0}
                 userStatus={userStatus}
-                deleteSelected={deleteTemplates}
+                banSelected={banUsers}
+                unbanSelected={unbanUsers}
+                deleteSelected={deleteUsers}
+                promoteSelected={promoteUsers}
+                restrictSelected={restrictSelectedUsers}
             />
             <div className="container-md mt-5 d-flex flex-column align-items-center">
                 <div className="table-responsive table table-borderless" style={{maxWidth: "900px", width: "100%"}}>
@@ -94,34 +148,33 @@ export function AccountTemplates({toggleTheme}) {
                                     onChange={toggleSelectAll}
                                 />
                             </th>
-                            <th>Title</th>
+                            <th>Email</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {templates.length === 0 ? (
+                        {users.length === 0 ? (
                             <tr>
                                 <td colSpan="2" className="text-muted">No templates found</td>
                             </tr>
                         ) : (
-                            templates.map((item, index) => (
+                            users.map((item, index) => (
                                 <tr key={item.id}>
                                     <td>
                                         <input
                                             type="checkbox"
-                                            checked={selectedTemplates.includes(item.id)}
+                                            checked={selectedUsers.includes(item.id)}
                                             onChange={() => toggleSelection(item.id)}
                                         />
                                     </td>
                                     <td>
                                         <a href={`/edit/${item.id}`} className="text-decoration-none">
-                                            {item.title || "Untitled Template"}
+                                            {item.email || "Untitled Template"}
                                         </a>
                                     </td>
                                 </tr>
                             ))
                         )}
                         </tbody>
-                        <button className={"btn btn-primary mt-3"} onClick={handleClick}>Create</button>
                     </table>
                 </div>
             </div>

@@ -13,7 +13,11 @@ export default function Navbar({
                                    templateId,
                                    accountSection,
                                    hasSelectedRows,
-                                   deleteSelected
+                                   deleteSelected,
+                                   banSelected,
+                                   promoteSelected,
+                                   restrictSelected,
+                                   unbanSelected,
                                }) {
     return (
 
@@ -54,6 +58,12 @@ export default function Navbar({
                             <a className={`nav-link ${accountSection === "templates" ? "active" : ""}`}
                                href={`/user/templates`}>templates</a>
                         </li>
+                        {userStatus === "admin" && (
+                            <li className="nav-item">
+                                <a className={`nav-link ${accountSection === "users" ? "active" : ""}`}
+                                   href={`/user/admin`}>users</a>
+                            </li>
+                        )}
                     </ul>
                 </div>
             )}
@@ -78,9 +88,18 @@ export default function Navbar({
                         <button className="btn btn-primary" onClick={submit}>Submit</button>
                     </div>
                 )}
-                {accountSection === "templates" && hasSelectedRows && (
+                {view === "account" && hasSelectedRows && (
                     <div className={"ms-auto d-flex gap-2"}>
                         <button className="btn btn-danger" onClick={deleteSelected}>Delete</button>
+                        {accountSection === "users" && (
+                            <div className={"ms-auto d-flex gap-2"}>
+                                <button className={"btn btn-danger ms-auto"} onClick={banSelected}>Ban</button>
+                                <button className={"btn btn-danger ms-auto"} onClick={restrictSelected}>Restrict
+                                </button>
+                                <button className="btn btn-primary ms-auto" onClick={unbanSelected}>Unban</button>
+                                <button className="btn btn-success ms-auto" onClick={promoteSelected}>Grant</button>
+                            </div>
+                        )}
                     </div>
                 )}
 

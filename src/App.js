@@ -15,6 +15,7 @@ import {ListForms} from "./views/ListForms";
 import {Home} from "./views/Home";
 import {AccountForms} from "./views/AccountForms";
 import {AccountTemplates} from "./views/AccountTemplates";
+import {AccountUsers} from "./views/AccountUsers";
 
 export default function App() {
     const [theme, setTheme] = useState('');
@@ -61,6 +62,13 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <AccountTemplates toggleTheme={toggleTheme} theme={currentTheme}/>
+                        </ProtectedRoute>
+                    }
+                />/><Route
+                    path="/user/admin"
+                    element={
+                        <ProtectedRoute>
+                            <AccountUsers toggleTheme={toggleTheme} theme={currentTheme}/>
                         </ProtectedRoute>
                     }
                 />

@@ -10,7 +10,8 @@ export function AccountForms({toggleTheme}) {
     const [username, setUsername] = useState("Guest");
     const api = process.env.REACT_APP_API_ADDRESS;
     const [forms, setForms] = useState([]);
-    const userId = getUserData().id;
+    const [userId, setUserId] = useState("");
+    const [userStatus, setUserStatus] = useState("user");
     useEffect(() => {
         axios.get(`${api}/user/forms`, {
             headers: {
@@ -19,8 +20,15 @@ export function AccountForms({toggleTheme}) {
         }).then(res => {
             setForms(JSON.parse(res.data));
         })
-        setUsername(getUserData().username);
+        configureUser();
     }, [api])
+
+    const configureUser = () => {
+        const user = getUserData()
+        setUserId(user.id);
+        setUsername(user.username);
+        if (user.roles.includes("ROLE_ADMIN")) setUserStatus("admin");
+    }
 
     return (
         <AppHeader className="App-header">
@@ -28,6 +36,7 @@ export function AccountForms({toggleTheme}) {
                 toggleTheme={toggleTheme}
                 username={username}
                 view={"account"}
+                userStatus={userStatus}
                 accountSection={"forms"}
             />
             <div className="container-md mt-5 d-flex flex-column align-items-center">
