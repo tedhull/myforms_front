@@ -46,6 +46,9 @@ export default function Login() {
                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">
                     Login
                 </button>
+                <li>
+                    <a href="/signup">Dont have an account? Sign Up!</a>
+                </li>
             </form>
         </div>
     );
