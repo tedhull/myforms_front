@@ -60,7 +60,6 @@ export function Form({toggleTheme, redact}) {
                     "Authorization": `Bearer ${localStorage.getItem("access_token")}`
                 }
             }).then(response => {
-                console.log(response.data);
                 setSubmissionData(response.data);
                 localStorage.setItem("submission_data", JSON.stringify(response.data));
             }).catch(error => {
@@ -110,7 +109,6 @@ export function Form({toggleTheme, redact}) {
             const tagged = data.tags.map(tag => `#${tag}`)
             setTags(tagged.join(' '));
             setTopic(data.topic);
-            console.log(submissionData['data']);
             const fieldValues = submissionData.data ? JSON.parse(submissionData.data.fields) : [];
             localStorage.setItem('original', JSON.stringify(data));
             const processedBlocks = data.fields.map((field) => {
@@ -151,7 +149,6 @@ export function Form({toggleTheme, redact}) {
         if (hasErrors) return;
 
         const questions = blocks.filter(block => block.type === "question");
-        console.log(userId);
         const formJson = questions.map(question => ({
             type: question.questionType,
             value: question.inputValue,
@@ -166,8 +163,6 @@ export function Form({toggleTheme, redact}) {
                 contentType: "application/json",
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
             }
-        }).then((response) => {
-            console.log(response);
         })
             .catch((error) => {
                 console.log(error);

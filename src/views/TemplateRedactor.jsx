@@ -75,7 +75,6 @@ export function TemplateRedactor({toggleTheme}) {
         setUsername(user.username.split('@')[0]);
         const creatorId = localStorage.getItem("creatorId");
         const isAdmin = (user.roles.includes('ROLE_ADMIN'));
-        console.log(user);
         if (!id || creatorId == user.id) {
             setUserStatus('creator');
         } else if (isAdmin) {
@@ -151,7 +150,6 @@ export function TemplateRedactor({toggleTheme}) {
         const builder = new TemplateBuilder(blocks, title, description, createTags(), topic)
         builder.submitTemplate(e).then(response => {
                 try {
-                    console.log(response);
                     navigate(`/edit/${response.data.id}`);
                 } catch (error) {
                     console.log(error);

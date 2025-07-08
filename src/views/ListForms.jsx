@@ -1,17 +1,15 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import '../App.css';
 import {useParams} from "react-router-dom"
 import {getUserData} from "../scripts/User";
 import axios from "axios";
 import {AppHeader} from "../components/AppHeader";
 import Navbar from "../components/Navbar";
-import App from "../App";
 
 export function ListForms({toggleTheme}) {
     const {id} = useParams();
-    const [username, setUsername] = useState("");
+    const [username, setUsername] = useState("Guest");
     const navType = performance.getEntriesByType("navigation")[0]?.type;
-    const [isLoading, setIsLoading] = useState(true);
     const [forms, setForms] = useState([]);
     const api = process.env.REACT_APP_API_ADDRESS;
     useEffect(() => {
@@ -21,11 +19,9 @@ export function ListForms({toggleTheme}) {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`
                 }
             }).then(response => {
-                localStorage.setItem("forms", JSON.stringify(response.data.data));
                 setForms(JSON.parse(response.data.data));
             })
         }
-        setIsLoading(false);
         ConfigureUser();
     }, [api, id, navType])
     const ConfigureUser = () => {

@@ -10,12 +10,15 @@ export default function Navbar({
                                    publish,
                                    editing,
                                    view,
-                                   templateId
+                                   templateId,
+                                   accountSection,
+                                   hasSelectedRows,
+                                   deleteSelected
                                }) {
     return (
 
         <nav className="navbar redactor-navbar fixed-top navbar-border navbar-expand-lg px-3">
-            <a className="navbar-brand" href="#">
+            <a className="navbar-brand" href="/">
                 <img src="../docs/4.0/assets/brand/bootstrap-solid.svg" width="30" height="30"
                      className="d-inline-block align-top" alt=""/>
                 <span className={"brand-text ms-2"}>Myforms</span>
@@ -36,6 +39,20 @@ export default function Navbar({
                         <li className="nav-item">
                             <a className={`nav-link ${view === "table" ? "active" : ""}`}
                                href={`/list/${templateId}`}>Responses</a>
+                        </li>
+                    </ul>
+                </div>
+            )}
+            {view === "account" && (
+                <div className="navbar-center-tabs-container">
+                    <ul className="nav nav-underline navbar-center-tabs justify-content-center">
+                        <li className="nav-item">
+                            <a className={`nav-link ${accountSection === "forms" ? "active" : ""}`}
+                               href={`/user/forms`}>forms</a>
+                        </li>
+                        <li className="nav-item">
+                            <a className={`nav-link ${accountSection === "templates" ? "active" : ""}`}
+                               href={`/user/templates`}>templates</a>
                         </li>
                     </ul>
                 </div>
@@ -61,6 +78,11 @@ export default function Navbar({
                         <button className="btn btn-primary" onClick={submit}>Submit</button>
                     </div>
                 )}
+                {accountSection === "templates" && hasSelectedRows && (
+                    <div className={"ms-auto d-flex gap-2"}>
+                        <button className="btn btn-danger" onClick={deleteSelected}>Delete</button>
+                    </div>
+                )}
 
                 <div className="dropdown">
                     <button
@@ -73,13 +95,12 @@ export default function Navbar({
                         {username}
                     </button>
                     <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a className="dropdown-item" href="#">Account</a></li>
+                        <li><a className="dropdown-item" href="/user/forms">Account</a></li>
                         <li><a className="dropdown-item" href="/logout">Log Out</a></li>
                         <button className="btn"
                                 onClick={toggleTheme}>{localStorage.getItem('theme') === 'light' ? "Light Mode" : "Dark Mode"}</button>
                     </ul>
                 </div>
-
             </div>
         </nav>
     )

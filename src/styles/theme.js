@@ -18,7 +18,7 @@ export const darkTheme = {
     text: "#fff",
     placeholder: "#636363",
     redactorNavbarBackground: '#1b1b25',
-    tableBackground: '#13131c',
+    tableBackground: '#13131c   ',
     blockBorder: '#606060',
     card: '#191919',
     inputBackground: "#2c2c2c",

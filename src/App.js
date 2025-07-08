@@ -4,7 +4,6 @@ import {useEffect, useState} from 'react';
 import './App.css';
 import {lightTheme, darkTheme} from './styles/theme';
 import ProtectedRoute from './scripts/ProtectedRoute';
-import BootstrapTestPage from './BootstrapTestPage';
 import TemplateFinder from './views/FindTemplate';
 import GlobalStyle from './styles/GlobalStyle';
 import Login from './views/Login';
@@ -13,6 +12,9 @@ import Register from './views/Signup';
 import LogoutHandler from './scripts/LogoutHandler';
 import {TemplateRedactor} from "./views/TemplateRedactor";
 import {ListForms} from "./views/ListForms";
+import {Home} from "./views/Home";
+import {AccountForms} from "./views/AccountForms";
+import {AccountTemplates} from "./views/AccountTemplates";
 
 export default function App() {
     const [theme, setTheme] = useState('');
@@ -44,10 +46,24 @@ export default function App() {
                         path="/"
                         element={
                             <ProtectedRoute>
-                                <TemplateRedactor toggleTheme={toggleTheme} theme={currentTheme}/>
+                                <Home toggleTheme={toggleTheme} theme={currentTheme}/>
                             </ProtectedRoute>
                         }
-                    />
+                    /><Route
+                    path="/user/forms"
+                    element={
+                        <ProtectedRoute>
+                            <AccountForms toggleTheme={toggleTheme} theme={currentTheme}/>
+                        </ProtectedRoute>
+                    }
+                /><Route
+                    path="/user/templates"
+                    element={
+                        <ProtectedRoute>
+                            <AccountTemplates toggleTheme={toggleTheme} theme={currentTheme}/>
+                        </ProtectedRoute>
+                    }
+                />
                     <Route
                         path="/find"
                         element={

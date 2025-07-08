@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {setToken} from "../scripts/TokenManager";
 import axios from "axios";
-import {Navigate, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ export default function Login() {
                 password,
             }).then(res => {
                 setToken(res.data.token)
-                navigate('/create');
+                navigate('/');
             });
         } catch (error) {
             console.error(error);

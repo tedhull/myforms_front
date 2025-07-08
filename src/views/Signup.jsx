@@ -13,12 +13,12 @@ export default function Register() {
         try {
             const address = process.env.REACT_APP_SERVER_ADDRESS;
             await axios.post(`${address}/auth/register`, {
-                username,
-                email,
-                password,
-            }).then(res => {
-                setToken(res.data.token)
-                navigate('/create');
+                    username,
+                    email,
+                    password,
+                },
+            ).then(res => {
+                navigate('/login');
             });
         } catch (error) {
             console.error(error);

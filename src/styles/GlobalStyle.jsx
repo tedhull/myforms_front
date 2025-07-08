@@ -166,7 +166,7 @@ const GlobalStyle = createGlobalStyle`
 
     th, td {
         padding: 0.75rem;
-        border: 1px solid ${({theme}) => theme.blockBorder};
+        border-bottom: 1px solid ${({theme}) => theme.blockBorder} !important;
         color: ${({theme}) => theme.text} !important;
         background-color: ${({theme}) => theme.tableBackground} !important; /* override Bootstrap white */
     }
