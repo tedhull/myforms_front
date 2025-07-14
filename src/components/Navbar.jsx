@@ -116,6 +116,8 @@ export default function Navbar({
                     <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <li><a className="dropdown-item" href="/user/forms">Account</a></li>
                         <li><a className="dropdown-item" href="/logout">Log Out</a></li>
+                        <li><a className={"dropdown-item"} href={`/connect/${process.env.REACT_APP_SF_FORM_ID}`}>Add Salesforce</a>
+                        </li>
                         <button className="btn"
                                 onClick={toggleTheme}>{localStorage.getItem('theme') === 'light' ? "Light Mode" : "Dark Mode"}</button>
                     </ul>

@@ -12,7 +12,7 @@ import FormCard from "../components/FormCard";
 import FormHeaderBlock from "../components/FormHeaderBlock";
 import {validateBlock} from "../scripts/FormValidator";
 
-export function Form({toggleTheme, redact}) {
+export function Form({toggleTheme, redact, custom}) {
     const api = process.env.REACT_APP_API_ADDRESS;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -152,6 +152,7 @@ export function Form({toggleTheme, redact}) {
         const formJson = questions.map(question => ({
             type: question.questionType,
             value: question.inputValue,
+            name: question.title,
             id: question.id,
         }));
         axios.post(`${api}/form/submit`, {
@@ -165,8 +166,32 @@ export function Form({toggleTheme, redact}) {
             }
         })
             .catch((error) => {
-                console.log(error);
+
             })
+    }
+    const connect = () => {
+
+        const questions = blocks.filter(block => block.type === "question");
+        const formJson = questions.reduce((acc, question) => {
+            acc[question.title] = question.inputValue;
+            return acc;
+        }, {});
+        console.log(formJson);
+
+        axios.post(`${api}/salesforce/connect`, formJson
+            ,
+            {
+                headers: {
+                    contentType: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                }
+            }).then((response) => {
+                console.log(JSON.parse(response.data));
+            }
+        ).catch((error) => {
+            console.log(error);
+        })
+
     }
     return (
         <div>
@@ -175,7 +200,7 @@ export function Form({toggleTheme, redact}) {
                     toggleTheme={toggleTheme}
                     userStatus={userStatus}
                     username={username}
-                    submit={submitForm}
+                    submit={custom ? submitForm : connect}
                     editing={id != null}
                     view={"form"}
                 />
